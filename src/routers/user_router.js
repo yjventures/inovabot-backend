@@ -5,7 +5,7 @@ const userController = require('../controllers/user_controller');
 
 const router = express.Router();
 
-// ? API to login a user
+// ? API to create/sighin a user
 router.post(
   apiEnum.SIGNUP,
   [
@@ -18,5 +18,8 @@ router.post(
 
 // ? API to get all user using querystring
 router.get(apiEnum.GET_ALL, userController.getAllUser);
+
+// ? API to get user by ID
+router.get(apiEnum.GET_BY_ID, userController.getUserByID);
 
 module.exports = router;

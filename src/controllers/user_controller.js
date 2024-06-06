@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { validationResult } = require("express-validator");
 const {
+  findUserById,
   findUserByObject,
   createUser,
   getUsers,
@@ -80,7 +81,25 @@ const getAllUser = async (req, res, next) => {
   }
 };
 
+// * Function to find user by id
+const getUserByID = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const id = req?.params?.id;
+    const user = await findUserById(id, session);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ user });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
 module.exports = {
   create,
   getAllUser,
+  getUserByID,
 }

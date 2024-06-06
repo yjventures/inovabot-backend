@@ -5,7 +5,7 @@ const { hashPassword } = require("../common/manage_pass");
 // & Function to find user by ID
 const findUserById = async (id, session) => {
   try {
-    const user = await User.findById(id).lean().session(session);
+    const user = await User.findById(id).session(session).lean();
     if (user) {
       return user;
     } else {
@@ -19,7 +19,7 @@ const findUserById = async (id, session) => {
 // & Function to find user using body
 const findUserByObject = async (body, session) => {
   try {
-    const user = await User.findOne(body).session(session);
+    const user = await User.findOne(body).session(session).lean();
     return user;
   } catch (err) {
     throw createError();
@@ -70,9 +70,9 @@ const getUsers = async (req, session) => {
     const count = await User.countDocuments(query);
     return { users, total: count };
   } catch (err) {
-    next(err);
+    throw createError(404, "User not found");
   }
-}
+};
 
 module.exports = {
   findUserById,
