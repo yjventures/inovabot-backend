@@ -22,4 +22,7 @@ router.get(apiEnum.GET_ALL, userController.getAllUser);
 // ? API to get user by ID
 router.get(apiEnum.GET_BY_ID, userController.getUserByID);
 
+// ? API to update user by ID
+router.put(apiEnum.UPDATE_BY_ID, userController.updateUserByID);
+
 module.exports = router;

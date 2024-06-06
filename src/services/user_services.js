@@ -74,9 +74,36 @@ const getUsers = async (req, session) => {
   }
 };
 
+// & Function to update a user by ID
+const updateUserById = async (id, body, session) => {
+  try {
+    const query = await findUserById(id, session);
+    for (let item in body) {
+      if (item == "birthdate") {
+        const bday = body?.birthdate.split("/").reverse().join("-");
+        query.birthdate = new Date(bday);
+      } else {
+        query[item] = body[item];
+      }
+    }
+    const updateUser = await User.findByIdAndUpdate(id, query, {
+      new: true,
+      session,
+    }).lean();
+    if (!updateUser) {
+      throw createError(400, "User not updated")
+    } else {
+      return { user: updateUser };
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   findUserById,
   findUserByObject,
   createUser,
   getUsers,
+  updateUserById,
 }

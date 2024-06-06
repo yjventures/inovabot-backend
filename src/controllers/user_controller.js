@@ -5,6 +5,7 @@ const {
   findUserByObject,
   createUser,
   getUsers,
+  updateUserById,
 } = require("../services/user_services");
 const { createError } = require("../common/error");
 
@@ -98,8 +99,33 @@ const getUserByID = async (req, res, next) => {
   }
 };
 
+// * Function to update user by ID
+const updateUserByID = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const id = req?.params?.id;
+    if (req?.body) {
+      const user = await updateUserById(id, req.body, session);
+      await session.commitTransaction();
+      session.endSession();
+      res.status(200).json(user);
+    } else {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "No body provided"));
+    }
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+
 module.exports = {
   create,
   getAllUser,
   getUserByID,
+  updateUserByID,
 }
