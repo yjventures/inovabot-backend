@@ -3,6 +3,7 @@ const { validationResult } = require("express-validator");
 const {
   findUserByObject,
   createUser,
+  getUsers,
 } = require("../services/user_services");
 const { createError } = require("../common/error");
 
@@ -57,6 +58,29 @@ const create = async (req, res, next) => {
   }
 };
 
+// * Function to get all users using querystring
+const getAllUser = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const users = await getUsers(req, session);
+    if (users) {
+      await session.commitTransaction();
+      session.endSession();
+      res.status(200).json(users);
+    } else {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(404, "User not founr"));
+    }
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
 module.exports = {
   create,
+  getAllUser,
 }

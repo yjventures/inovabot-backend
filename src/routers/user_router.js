@@ -16,4 +16,7 @@ router.post(
   userController.create
 );
 
+// ? API to get all user using querystring
+router.get(apiEnum.GET_ALL, userController.getAllUser);
+
 module.exports = router;
