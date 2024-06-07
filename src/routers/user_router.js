@@ -2,6 +2,8 @@ const express = require('express');
 const { body } = require("express-validator");
 const apiEnum = require('../utils/api_constant');
 const userController = require('../controllers/user_controller');
+const { process_query } = require("../middlewares/process_query");
+const { authenticateToken } = require("../middlewares/token_authenticator");
 
 const router = express.Router();
 
@@ -17,12 +19,15 @@ router.post(
 );
 
 // ? API to get all user using querystring
-router.get(apiEnum.GET_ALL, userController.getAllUser);
+router.get(apiEnum.GET_ALL, process_query, userController.getAllUser);
 
 // ? API to get user by ID
 router.get(apiEnum.GET_BY_ID, userController.getUserByID);
 
 // ? API to update user by ID
-router.put(apiEnum.UPDATE_BY_ID, userController.updateUserByID);
+router.put(apiEnum.UPDATE_BY_ID, authenticateToken, userController.updateUserByID);
+
+// ? API to delete user by ID
+router.delete(apiEnum.DELETE_BY_ID, authenticateToken, userController.deleteUserByID);
 
 module.exports = router;

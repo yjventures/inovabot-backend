@@ -6,8 +6,10 @@ const {
   createUser,
   getUsers,
   updateUserById,
+  deleteUserById,
 } = require("../services/user_services");
 const { createError } = require("../common/error");
+const { userType } = require("../utils/enums");
 
 // * Function to create an user
 const create = async (req, res, next) => {
@@ -73,7 +75,7 @@ const getAllUser = async (req, res, next) => {
     } else {
       await session.abortTransaction();
       session.endSession();
-      return next(createError(404, "User not founr"));
+      return next(createError(404, "User not found"));
     }
   } catch (err) {
     await session.abortTransaction();
@@ -105,6 +107,9 @@ const updateUserByID = async (req, res, next) => {
   try {
     session.startTransaction();
     const id = req?.params?.id;
+    if (!id) {
+      return next(createError(400, "Id not provided"))
+    }
     if (req?.body) {
       const user = await updateUserById(id, req.body, session);
       await session.commitTransaction();
@@ -122,10 +127,40 @@ const updateUserByID = async (req, res, next) => {
   }
 };
 
+// * Function to delete user by ID
+const deleteUserByID = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const id = req?.params?.id;
+    if (!id) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "Not provide user id"));
+    } else if (
+      !req?.user?.type ||
+      req.user.type !== userType.ADMIN
+    ) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "You have to be admin or super admin to delete this account"));
+    } else {
+      const message = await deleteUserById(id, session);
+      await session.commitTransaction();
+      session.endSession();
+      res.status(200).json(message);
+    }
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
 
 module.exports = {
   create,
   getAllUser,
   getUserByID,
   updateUserByID,
+  deleteUserByID,
 }

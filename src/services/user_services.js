@@ -100,10 +100,25 @@ const updateUserById = async (id, body, session) => {
   }
 };
 
+// & Function to delete a user by ID
+const deleteUserById = async (id, session) => {
+  try {
+    const deleteUser = await User.findByIdAndDelete(id).session(session);
+    if (!deleteUser) {
+      throw createError(404, "User not found");
+    } else {
+      return { message: "User is deleted" };
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   findUserById,
   findUserByObject,
   createUser,
   getUsers,
   updateUserById,
+  deleteUserById,
 }
