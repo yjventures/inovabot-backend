@@ -32,6 +32,9 @@ app.use('/auth', require('../routers/auth_router'));
 // ~ Router for user routes
 app.use('/users', require('../routers/user_router'));
 
+// ~ Router for password manage
+app.use('/password-manager', require('../routers/password_router'));
+
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
   const errMessage = err.message || "Something went wrong";

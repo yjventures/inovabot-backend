@@ -4,13 +4,20 @@ const loginType = {
 };
 
 const userType = {
-  SUPER_ADMIN: 'super_admin',
+  COMPANY_ADMIN: 'company_admin',
   ADMIN: 'admin',
-  CUSTOMER: 'customer',
-  VENDOR: 'vendor',
+  USER: 'user',
+  REGULAR: 'regular',
 };
+
+const otpStatus = {
+  UNUSED: 0,
+  USED: 1,
+  CANCELED: 2,
+}
 
 module.exports = {
   loginType,
   userType,
+  otpStatus,
 };

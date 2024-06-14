@@ -9,14 +9,17 @@ const router = express.Router();
 
 // ? API to create/sighin a user
 router.post(
-  apiEnum.SIGNUP,
+  apiEnum.REQUEST_SIGNUP,
   [
     body("name", "Name is required"),
     body("email", "Please enter a valid email").notEmpty().isEmail(),
     body("password", "Please enter at least 8 digits").isLength({ min: 8 }),
   ],
-  userController.create
+  userController.requestCreate
 );
+
+// ? API to create/sighin a user
+router.post(apiEnum.SIGNUP, userController.create);
 
 // ? API to get all user using querystring
 router.get(apiEnum.GET_ALL, process_query, userController.getAllUser);
