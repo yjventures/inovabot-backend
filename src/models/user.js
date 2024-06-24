@@ -30,6 +30,9 @@ const userSchema = mongoose.Schema(
       enum: ["admin", "user", "super-admin", "company-admin"],
       default: "user",
     },
+    last_subscribed: {
+      type: Date
+    },
   },
   {
     timestamps: true,
