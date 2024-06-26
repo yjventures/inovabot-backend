@@ -38,6 +38,9 @@ app.use('/password-manager', require('../routers/password_router'));
 // ~ Router for company
 app.use('/companies', require('../routers/company_router'));
 
+// ~ Router for addresses
+app.use('/addresses', require('../routers/address_router'));
+
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
   const errMessage = err.message || "Something went wrong";
