@@ -2,6 +2,7 @@ const apiEnum = {
   LOGIN: '/login',
   SIGNUP: '/signup',
   REQUEST_SIGNUP: '/request-signup',
+  CREATE: '/create',
   GET_ALL: '/get-all',
   GET_BY_ID: '/get/:id',
   UPDATE_BY_ID: '/update/:id',

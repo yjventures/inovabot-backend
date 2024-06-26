@@ -33,7 +33,11 @@ const createUser = async (userBody, password, session) => {
     userBody.password = hash;
     const userCollection = await new User(userBody);
     const user = await userCollection.save({session});
-    return user;
+    if (user) {
+      return user;
+    } else {
+      throw createError(400, "User not created");
+    }
   } catch (err) {
     throw err;
   }
@@ -67,7 +71,7 @@ const getUsers = async (req, session) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .session(session);
-    const count = await User.countDocuments(query);
+    const count = await User.countDocuments(query, {session});
     return { users, total: count };
   } catch (err) {
     throw createError(404, "User not found");
@@ -79,8 +83,8 @@ const updateUserById = async (id, body, session) => {
   try {
     const query = await findUserById(id, session);
     for (let item in body) {
-      if (item == "birthdate") {
-        const bday = body?.birthdate.split("/").reverse().join("-");
+      if (item == "birthdate" || item === "last_subscribed" || item === "expires_at") {
+        const bday = body?.birthdate;
         query.birthdate = new Date(bday);
       } else {
         query[item] = body[item];
@@ -91,7 +95,7 @@ const updateUserById = async (id, body, session) => {
       session,
     }).lean();
     if (!updateUser) {
-      throw createError(400, "User not updated")
+      throw createError(400, "User not updated");
     } else {
       return { user: updateUser };
     }

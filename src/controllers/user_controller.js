@@ -164,6 +164,8 @@ const updateUserByID = async (req, res, next) => {
     session.startTransaction();
     const id = req?.params?.id;
     if (!id) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "Id not provided"));
     }
     if (req?.body) {
