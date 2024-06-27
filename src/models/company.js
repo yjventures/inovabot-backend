@@ -43,7 +43,7 @@ const companySchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       default: null,
       ref: 'Package',
-    }
+    },
   },
   {
     timestamps: true,

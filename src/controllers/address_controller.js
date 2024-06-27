@@ -1,16 +1,16 @@
 const mongoose = require("mongoose");
 const { validationResult } = require("express-validator");
 const {
-  createCompany,
-  getCompanyUsingQureystring,
-  findCompanyById,
-  updateCompanyById,
-  deleteCompanyById,
-} = require("../services/company_services");
+  createAddress,
+  getAddressUsingQureystring,
+  findAddressById,
+  updateAddressById,
+  deleteAddressById,
+} = require("../services/address_services");
 const { userType } = require("../utils/enums");
 const { createError } = require("../common/error");
 
-// * Function to create a company
+// * Function to create a address
 const create = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
@@ -21,17 +21,17 @@ const create = async (req, res, next) => {
       session.endSession();
       return next(createError(400, errors));
     } else {
-      const companyObj = {};
+      const addressObj = {};
       for (let item in req?.body) {
-        companyObj[item] = req.body[item];
+        addressObj[item] = req.body[item];
       }
-      const company = await createCompany(companyObj, session);
-      if (company) {
+      const address = await createAddress(addressObj, session);
+      if (address) {
         await session.commitTransaction();
         session.endSession();
         res
           .status(200)
-          .json({ message: "successfull", company });
+          .json({ message: "successfull", address });
       } else {
         await session.abortTransaction();
         session.endSession();
@@ -45,12 +45,12 @@ const create = async (req, res, next) => {
   }
 };
 
-// * Function to get all the companies using querystring
-const getAllCompany = async (req, res, next) => {
+// * Function to get all the addresses using querystring
+const getAllAddress = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const result = await getCompanyUsingQureystring(req?.body, session);
+    const result = await getAddressUsingQureystring(req?.body, session);
     if (result) {
       await session.commitTransaction();
       session.endSession();
@@ -67,16 +67,16 @@ const getAllCompany = async (req, res, next) => {
   }
 };
 
-// * Function to get a company by ID
-const getCompanyByID = async (req, res, next) => {
+// * Function to get a address by ID
+const getAddressByID = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
     const id = req?.params?.id;
-    const company = await findCompanyById(id, session);
+    const address = await findAddressById(id, session);
     await session.commitTransaction();
     session.endSession();
-    res.status(200).json({ company });
+    res.status(200).json({ address });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -84,8 +84,8 @@ const getCompanyByID = async (req, res, next) => {
   }
 };
 
-// * Function to update a company by ID
-const updateCompanyByID = async (req, res, next) => {
+// * Function to update a address by ID
+const updateAddressByID = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -96,10 +96,10 @@ const updateCompanyByID = async (req, res, next) => {
       return next(createError(400, "Id not provided"))
     }
     if (req?.body) {
-      const company = await updateCompanyById(id, req.body, session);
+      const address = await updateAddressById(id, req.body, session);
       await session.commitTransaction();
       session.endSession();
-      res.status(200).json(company);
+      res.status(200).json(address);
     } else {
       await session.abortTransaction();
       session.endSession();
@@ -112,8 +112,8 @@ const updateCompanyByID = async (req, res, next) => {
   }
 };
 
-// * Function to delete a company by ID
-const deleteCompanyByID = async (req, res, next) => {
+// * Function to delete a address by ID
+const deleteAddressByID = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -129,7 +129,7 @@ const deleteCompanyByID = async (req, res, next) => {
       session.endSession();
       return next(createError(400, "You have to be admin or super admin to delete"));
     } else {
-      const message = await deleteCompanyById(id, session);
+      const message = await deleteAddressById(id, session);
       await session.commitTransaction();
       session.endSession();
       res.json(200).json(message);
@@ -143,8 +143,8 @@ const deleteCompanyByID = async (req, res, next) => {
 
 module.exports = {
   create,
-  getAllCompany,
-  getCompanyByID,
-  updateCompanyByID,
-  deleteCompanyByID,
+  getAllAddress,
+  getAddressByID,
+  updateAddressByID,
+  deleteAddressByID,
 }
