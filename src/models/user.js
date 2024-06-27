@@ -31,7 +31,12 @@ const userSchema = mongoose.Schema(
       default: "user",
     },
     last_subscribed: {
-      type: Date
+      type: Date,
+      default: null,
+    },
+    expires_at: {
+      type: Date,
+      default: null,
     },
   },
   {
