@@ -1,7 +1,7 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 require("dotenv").config();
 
-//create stripe customer
+// ^ create stripe customer
 const CreateStripeCustomer = async (email) => {
   try {
     const customer = await stripe.customers.create({
@@ -9,11 +9,11 @@ const CreateStripeCustomer = async (email) => {
     });
     return customer;
   } catch (err) {
-    throw new Error({ message: "Stripe Customer Creation fail" });
+    throw createError(500, 'Create Stripe Customer error');
   }
 };
 
-// Create a checkout session for a subscription
+// ^ Create a checkout session for a subscription
 const SubscriptionSession = async (priceId, userCustomerId) => {
   try {
     const session = await stripe.checkout.sessions.create({
@@ -25,19 +25,18 @@ const SubscriptionSession = async (priceId, userCustomerId) => {
           quantity: 1,
         },
       ],
-      customer: userCustomerId,
-      // customer: "cus_PgjmeMfjbx7SmI",
+      customer: userCustomerId, // customer: "cus_PgjmeMfjbx7SmI",
       success_url: process.env.STRIPE_SUCCESS_URL,
       cancel_url: process.env.STRIPE_CANCEL_URL,
     });
-
+    
     return session.url;
   } catch (error) {
-    throw new Error({ message: "Create Subscription Session error" });
+    throw createError(500, 'Checkout Session Error');
   }
 };
 
-// List all subscriptions for the user with their stripe_customer_id
+// ^ List all subscriptions for the user with their stripe_customer_id
 const GetAllSubscription = async (userCustomerId) => {
   try {
     const subscriptions = await stripe.subscriptions.list({
@@ -49,7 +48,7 @@ const GetAllSubscription = async (userCustomerId) => {
 
     return subscriptions;
   } catch (error) {
-    throw new Error({ message: "Subscription List error" });
+    throw createError(500, 'Error for show stripe subscriptions');
   }
 };
 
