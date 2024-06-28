@@ -2,7 +2,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 require("dotenv").config();
 
 // ^ create stripe customer
-const CreateStripeCustomer = async (email) => {
+const createStripeCustomer = async (email) => {
   try {
     const customer = await stripe.customers.create({
       email: email,
@@ -14,7 +14,7 @@ const CreateStripeCustomer = async (email) => {
 };
 
 // ^ Create a checkout session for a subscription
-const SubscriptionSession = async (priceId, userCustomerId) => {
+const subscriptionSession = async (priceId, userCustomerId) => {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -37,7 +37,7 @@ const SubscriptionSession = async (priceId, userCustomerId) => {
 };
 
 // ^ List all subscriptions for the user with their stripe_customer_id
-const GetAllSubscription = async (userCustomerId) => {
+const getAllSubscription = async (userCustomerId) => {
   try {
     const subscriptions = await stripe.subscriptions.list({
       customer: userCustomerId,
@@ -53,7 +53,7 @@ const GetAllSubscription = async (userCustomerId) => {
 };
 
 module.exports = {
-  CreateStripeCustomer,
-  SubscriptionSession,
-  GetAllSubscription,
+  createStripeCustomer,
+  subscriptionSession,
+  getAllSubscription,
 };
