@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const { createError } = require("../common/error");
 
+// ^ Function to generate verification link through encription
 const generateVerificationLink = (user) => {
   try {
     let secretKey = process.env.CRYPTO_SECRET;
@@ -15,6 +16,7 @@ const generateVerificationLink = (user) => {
   }
 };
 
+// ^ Function to decrypt link
 const decryptLink = (link) => {
   try {
     let secretKey = process.env.CRYPTO_SECRET;

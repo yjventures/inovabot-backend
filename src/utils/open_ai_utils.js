@@ -66,6 +66,7 @@ class EventHandler extends EventEmitter {
   }
 }
 
+// ^ Function to create assistant
 const createAssistant = async (model, name, instructions, tools) => {
   const assistant = await openai.beta.assistants.create({
     name,
@@ -76,6 +77,7 @@ const createAssistant = async (model, name, instructions, tools) => {
   return assistant;
 };
 
+// ^ Function to get list of assistant
 const listOfAssistants = async () => {
   try {
     const assistants = await openai.beta.assistants.list();
@@ -85,6 +87,7 @@ const listOfAssistants = async () => {
   }
 };
 
+// ^ Function to run assistant
 const runAssistant = async (id, mainPrompt, eventEmitter) => {
   try {
     const thread  = await openai.beta.threads.create();
@@ -114,6 +117,7 @@ const runAssistant = async (id, mainPrompt, eventEmitter) => {
   }
 };
 
+// ^ Function to get a assistant by id
 const getAssistantById = async (id) => {
   try {
     const assistent = await openai.beta.assistants.retrieve(id);
