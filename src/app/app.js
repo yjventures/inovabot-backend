@@ -44,6 +44,9 @@ app.use('/addresses', require('../routers/address_router'));
 // ~ Router for packages
 app.use('/packages', require('../routers/package_router'));
 
+// ~ Router for subscription
+app.use('/subscription', require('../routers/subscription_router'));
+
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
   const errMessage = err.message || "Something went wrong";
