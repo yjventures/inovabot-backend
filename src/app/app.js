@@ -47,6 +47,9 @@ app.use('/packages', require('../routers/package_router'));
 // ~ Router for subscription
 app.use('/subscription', require('../routers/subscription_router'));
 
+// ~ Router for bot
+app.use('/bots', require('../routers/bot_router'));
+
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
   const errMessage = err.message || "Something went wrong";

@@ -1,4 +1,5 @@
 const { OpenAI } = require("openai");
+const { EventEmitter } = require("events");
 require("dotenv").config();
 
 const openAiConfig = {
@@ -67,14 +68,13 @@ class EventHandler extends EventEmitter {
 }
 
 // ^ Function to create assistant
-const createAssistant = async (model, name, instructions, tools) => {
-  const assistant = await openai.beta.assistants.create({
-    name,
-    instructions,
-    model,
-    tools,
-  });
-  return assistant;
+const createAssistant = async (body) => {
+  try {
+    const assistant = await openai.beta.assistants.create(body);
+    return assistant;
+  } catch (err) {
+    throw err;
+  }
 };
 
 // ^ Function to get list of assistant
@@ -127,11 +127,44 @@ const getAssistantById = async (id) => {
   }
 };
 
+// ^ Function to update a assistant by id
+const updateAssistantById = async (id, assistantObj) => {
+  try {
+    const assistant = await openai.beta.assistants.update(
+      id,
+      assistantObj,
+    );
+    if (assistant) {
+      return assistant;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to delete a assistant by id
+const deleteAssistantById = async (id) => {
+  try {
+    const response = await openai.beta.assistants.del(id);
+    if (response.deleted) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createAssistant,
   listOfAssistants,
   getAssistantById,
   runAssistant,
+  updateAssistantById,
+  deleteAssistantById,
 };
 
 // * Here is a template for the tools
