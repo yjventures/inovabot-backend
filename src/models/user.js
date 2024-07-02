@@ -38,6 +38,15 @@ const userSchema = mongoose.Schema(
       type: Date,
       default: null,
     },
+    company_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+      ref: 'Company'
+    },
+    company_position: {
+      type: String,
+      default: "",
+    }
   },
   {
     timestamps: true,

@@ -16,6 +16,8 @@ const {
   decryptLink,
 } = require("../utils/registration_utils");
 
+// TODO: Add API to invite an user in a company using company_id
+
 // * Function to create an user
 const create = async (req, res, next) => {
   const session = await mongoose.startSession();
