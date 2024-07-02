@@ -1,13 +1,28 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Company = require("../models/company");
 const { createError } = require("../common/error");
+const { createStripeCustomer } = require("../utils/stripe_utils");
+const { findUserById, updateUserById } = require("../services/user_services");
+const { employeeType } = require("../utils/enums");
 
 // & Function to create a new company
 const createCompany = async (companyObj, session) => {
   try {
+    const user = await findUserById(companyObj.user_id, session);
+    const customer = await createStripeCustomer(user.email);
+    companyObj.stripe_customer_id = customer.id;
+
     const companyCollection = await new Company(companyObj);
     const company = await companyCollection.save({ session });
     if (company) {
+      const newUser = await updateUserById(
+        user?._id,
+        { company_id: company._id, company_position: employeeType.ADMIN },
+        session
+      );
+      if (!newUser) {
+        throw createError(500, "Error while updating user");
+      }
       return company;
     } else {
       throw createError(400, "Company couldn't found");
@@ -21,7 +36,8 @@ const createCompany = async (companyObj, session) => {
 const getCompanyUsingQureystring = async (req, session) => {
   try {
     const query = {};
-    let page = 1, limit = 10;
+    let page = 1,
+      limit = 10;
     let sortBy = "createdAt";
     for (let item in req?.query) {
       if (item === "page") {
@@ -45,10 +61,10 @@ const getCompanyUsingQureystring = async (req, session) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .session(session);
-    const count = await Company.countDocuments(query, {session});
+    const count = await Company.countDocuments(query, { session });
     return { companies, total: count };
   } catch (err) {
-    throw createError(404, "Company not found"); 
+    throw createError(404, "Company not found");
   }
 };
 
@@ -74,7 +90,11 @@ const updateCompanyById = async (id, body, session) => {
   try {
     const query = await findCompanyById(id, session);
     for (let item in body) {
-      if (item === "recurring_date") {
+      if (
+        item === "recurring_date" ||
+        item === "last_subscribed" ||
+        item === "expires_at"
+      ) {
         const date = new Date(body[item]);
         query[item] = date;
       } else if (item === "user_id" || item === "package") {
@@ -83,7 +103,10 @@ const updateCompanyById = async (id, body, session) => {
         query[item] = body[item];
       }
     }
-    const updateCompany = await Company.findByIdAndUpdate(id, query, { new: true, session }).lean();
+    const updateCompany = await Company.findByIdAndUpdate(id, query, {
+      new: true,
+      session,
+    }).lean();
     if (!updateCompany) {
       throw createError(400, "Company not updated");
     } else {
@@ -93,7 +116,6 @@ const updateCompanyById = async (id, body, session) => {
     throw err;
   }
 };
-
 
 // & Function to delete a company by ID
 const deleteCompanyById = async (id, session) => {
@@ -114,5 +136,5 @@ module.exports = {
   getCompanyUsingQureystring,
   findCompanyById,
   updateCompanyById,
-  deleteCompanyById
+  deleteCompanyById,
 };

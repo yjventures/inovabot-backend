@@ -44,6 +44,9 @@ app.use('/addresses', require('../routers/address_router'));
 // ~ Router for packages
 app.use('/packages', require('../routers/package_router'));
 
+// ~ Router for subscription
+app.use('/subscription', require('../routers/subscription_router'));
+
 // ~ Router for bot
 app.use('/bots', require('../routers/bot_router'));
 

@@ -10,6 +10,9 @@ const apiEnum = {
   FORGET_PASSWORD: '/forget-password', 
   RESET_PASSWORD: '/reset-password',
   VERIFY: '/verify-otp',
+  STRIPE_SUBSCRIPTION_INFO: '/subscription-info',
+  STRIPE_BILLING_PORTAL: '/subscription-billing-portal',
+  STRIPE_UPDATE_INFO: '/update-subscription-info'
 };
 
 module.exports = apiEnum;

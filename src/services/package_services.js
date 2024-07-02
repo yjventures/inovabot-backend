@@ -1,10 +1,22 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Package = require("../models/package");
 const { createError } = require("../common/error");
+const { createProduct } = require("../utils/stripe_utils");
 
 // & Function to create a new package
 const createPackage = async (packageObj, session) => {
   try {
+    //TODO: create a stripe product for this package and put price id in packageObj as stripe_price_id
+    const product = await createProduct(
+      packageObj.name,
+      packageObj.price,
+      packageObj.currency,
+      packageObj.duration
+    );
+    if (!product) {
+      throw createError(500, "Failed to create stripe product");
+    }
+    packageObj.stripe_price_id = product.id;
     const packageCollection = await new Package(packageObj);
     const package = await packageCollection.save({ session });
     if (package) {
@@ -21,7 +33,8 @@ const createPackage = async (packageObj, session) => {
 const getPackageUsingQureystring = async (req, session) => {
   try {
     const query = {};
-    let page = 1, limit = 10;
+    let page = 1,
+      limit = 10;
     let sortBy = "createdAt";
     for (let item in req?.query) {
       if (item === "page") {
@@ -45,10 +58,10 @@ const getPackageUsingQureystring = async (req, session) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .session(session);
-    const count = await Package.countDocuments(query, {session});
+    const count = await Package.countDocuments(query, { session });
     return { packages, total: count };
   } catch (err) {
-    throw createError(404, "Package not found"); 
+    throw createError(404, "Package not found");
   }
 };
 
@@ -83,7 +96,10 @@ const updatePackageById = async (id, body, session) => {
         query[item] = body[item];
       }
     }
-    const updatePackage = await Package.findByIdAndUpdate(id, query, { new: true, session }).lean();
+    const updatePackage = await Package.findByIdAndUpdate(id, query, {
+      new: true,
+      session,
+    }).lean();
     if (!updatePackage) {
       throw createError(400, "Package not updated");
     } else {
@@ -93,7 +109,6 @@ const updatePackageById = async (id, body, session) => {
     throw err;
   }
 };
-
 
 // & Function to delete a package by ID
 const deletePackageById = async (id, session) => {
@@ -114,5 +129,5 @@ module.exports = {
   getPackageUsingQureystring,
   findPackageById,
   updatePackageById,
-  deletePackageById
+  deletePackageById,
 };
