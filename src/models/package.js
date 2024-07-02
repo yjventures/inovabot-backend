@@ -26,6 +26,10 @@ const packageSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    stripe_price_id: {
+      type: String,
+      default: '',
+    }
   },
   {
     timestamps: true,
