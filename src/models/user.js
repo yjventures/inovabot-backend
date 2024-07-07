@@ -46,6 +46,10 @@ const userSchema = mongoose.Schema(
     company_position: {
       type: String,
       default: "",
+    },
+    hasCompany: {
+      type: Boolean,
+      default: false,
     }
   },
   {

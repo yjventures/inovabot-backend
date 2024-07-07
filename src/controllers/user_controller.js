@@ -77,6 +77,9 @@ const requestCreate = async (req, res, next) => {
         type: req?.body?.type || "",
         password: req?.body?.password || "",
       };
+      if (req?.body?.type) {
+        userObj.has_company = true;
+      }
       // const user = await createUser(userObj, req?.body?.password, session);
       const link = generateVerificationLink(userObj);
       if (link) {

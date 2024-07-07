@@ -9,6 +9,26 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
+// * Setting streaming for openAI
+app.use((req, res, next) => {
+  res.sseSetup = () => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+  };
+
+  res.sseSend = (data) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  res.sseStop = () => {
+    res.end();
+  }
+
+  next();
+});
+
 // * Logger middleware
 app.use((req, res, next) => {
   res.on("finish", () => {
@@ -49,6 +69,9 @@ app.use('/subscription', require('../routers/subscription_router'));
 
 // ~ Router for bot
 app.use('/bots', require('../routers/bot_router'));
+
+// ~ Router for thread
+app.use('/threads', require('../routers/thread_router'));
 
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {

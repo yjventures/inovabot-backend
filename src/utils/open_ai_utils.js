@@ -87,36 +87,6 @@ const listOfAssistants = async () => {
   }
 };
 
-// ^ Function to run assistant
-const runAssistant = async (id, mainPrompt, eventEmitter) => {
-  try {
-    const thread  = await openai.beta.threads.create();
-    const message = await openai.beta.threads.messages.create(
-      thread.id,
-      {
-        role: "user",
-        content: mainPrompt
-      }
-    );
-    const eventHandler = new EventHandler(openai, eventEmitter);
-    eventHandler.on("event", eventHandler.onEvent.bind(eventHandler));
-    const run = openai.beta.threads.runs.stream (
-      thread.id,
-      {
-        assistant_id: id,
-        instructions: "You will teach the user how to solve it."
-      },
-      eventHandler,
-    );
-    for await (const event of run) {
-      eventHandler.emit("event", event);
-    }
-      // & To here }
-  } catch(err) {
-    throw err;
-  }
-};
-
 // ^ Function to get a assistant by id
 const getAssistantById = async (id) => {
   try {
@@ -158,13 +128,74 @@ const deleteAssistantById = async (id) => {
   }
 };
 
+// ^ Function to create a thread
+const createThread = async () => {
+  try {
+    const thread = await openai.beta.threads.create();
+    return thread;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to get a thread
+const getThread = async (thread_id) => {
+  try {
+    const thread = await openai.beta.threads.retrieve(thread_id);
+    return thread;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to get list of mesages in a thread
+const getMessagesOfThread = async (thread_id) => {
+  try {
+    const messageListObj = await openai.beta.threads.messages.list(thread_id);
+    return messageListObj.data;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to run a thread
+const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter, instructions) => {
+  try {
+    const message = await openai.beta.threads.messages.create(
+      thread_id,
+      {
+        role: "user",
+        content: mainPrompt,
+      }
+    );
+    const eventHandler = new EventHandler(openai, eventEmitter);
+    eventHandler.on("event", eventHandler.onEvent.bind(eventHandler));
+    const run = openai.beta.threads.runs.stream (
+      thread_id,
+      {
+        assistant_id,
+        instructions,
+      },
+      eventHandler,
+    );
+    for await (const event of run) {
+      eventHandler.emit("event", event);
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createAssistant,
   listOfAssistants,
   getAssistantById,
-  runAssistant,
   updateAssistantById,
   deleteAssistantById,
+  createThread,
+  getMessagesOfThread,
+  runThread,
+  getThread,
 };
 
 // * Here is a template for the tools
