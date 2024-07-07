@@ -9,7 +9,7 @@ const generateVerificationLink = (user) => {
     let encryptedUser = cipher.update(JSON.stringify(user), 'utf-8', 'hex');
     encryptedUser += cipher.final('hex');
     
-    const confirmationLink = `${process.env.REGISTER_REDIRECT_URL}/authenticate/${encodeURIComponent(encryptedUser)}`;
+    const confirmationLink = `${process.env.REGISTER_REDIRECT_URL}${encodeURIComponent(encryptedUser)}`;
     return confirmationLink;
   } catch (err) { 
     throw createError(400, 'Error generate verification link');

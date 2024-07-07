@@ -26,9 +26,9 @@ const generateTokens = (user) => {
 };
 
 // & Handle Email Login function
-const handleEmailLogin = async (email, password, userType, session) => {
+const handleEmailLogin = async (email, password, session) => {
   try {
-    const user = await User.findOne({ email, type: userType }).session(session).lean();
+    const user = await User.findOne({ email }).session(session).lean();
     if (user) {
       const isValidPassword = await checkHash(password, user.password);
       if (isValidPassword) {

@@ -12,11 +12,17 @@ const threadSchema = mongoose.Schema(
       default: '',
     },
     bot_id: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+      ref: 'Bot',
     },
     assistant_id: {
-      type: Number, 
-      default: otpStatus.UNUSED,
+      type: String,
+      default: '',
+    },
+    thread_id: {
+      type: String,
+      default: '',
     },
   },
   {

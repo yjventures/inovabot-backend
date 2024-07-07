@@ -4,7 +4,6 @@ const {
   createAssistant,
   listOfAssistants,
   getAssistantById,
-  runAssistant,
   updateAssistantById,
   deleteAssistantById,
 } = require("../utils/open_ai_utils");
