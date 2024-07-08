@@ -15,7 +15,10 @@ const apiEnum = {
   STRIPE_BILLING_PORTAL: '/subscription-billing-portal',
   STRIPE_UPDATE_INFO: '/update-subscription-info',
   WEBHOOK: '/webhook',
-  UPLOAD: "/upload"
+  UPLOAD: "/upload",
+  GET_THREAD: '/get-thread',
+  RUN_THREAD_BY_ID: '/run/:id',
+  GET_MESSAGE_LIST_BY_ID: '/messages/:id'
 };
 
 module.exports = apiEnum;
