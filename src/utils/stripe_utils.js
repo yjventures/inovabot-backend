@@ -46,7 +46,7 @@ const createProductWithMultiplePrices = async (
     });
 
     const monthlyPrice = await stripe.prices.create({
-      unit_amount: unit_amount_monthly,
+      unit_amount: unit_amount_monthly * 100,
       currency: currency || 'usd',
       product: product.id,
       nickname: `${name} Monthly`,
@@ -57,7 +57,7 @@ const createProductWithMultiplePrices = async (
     });
 
     const yearlyPrice = await stripe.prices.create({
-      unit_amount: unit_amount_yearly,
+      unit_amount: unit_amount_yearly * 100,
       currency: currency || 'usd',
       product: product.id,
       nickname: `${name} Yearly`,
