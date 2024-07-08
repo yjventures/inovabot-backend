@@ -17,8 +17,6 @@ class EventHandler extends EventEmitter {
 
   async onEvent(event) {
     try {
-      console.log(event);
-      
       this.eventEmitter.emit('event', event);
       // Retrieve events that are denoted with 'requires_action' since these will have our tool_calls
       if (event.event === "thread.run.requires_action") {

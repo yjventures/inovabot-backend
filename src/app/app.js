@@ -75,6 +75,10 @@ app.use('/threads', require('../routers/thread_router'));
 
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+  
   const errMessage = err.message || "Something went wrong";
   const errStatus = err.status || 500;
   return res.status(errStatus).json({
