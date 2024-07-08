@@ -30,7 +30,7 @@ const create = async (req, res, next) => {
         }
       }
       if (req?.user._id) {
-        companyObj.user_id = req.user._id;
+        companyObj.user_id = req.user.id;
       }
       const company = await createCompany(companyObj, session);
       if (company) {
