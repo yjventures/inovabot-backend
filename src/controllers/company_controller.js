@@ -29,6 +29,9 @@ const create = async (req, res, next) => {
           companyObj[item] = req.body[item];
         }
       }
+      if (req?.user.id) {
+        companyObj.user_id = req.user.id;
+      }
       const company = await createCompany(companyObj, session);
       if (company) {
         await session.commitTransaction();

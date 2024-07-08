@@ -55,6 +55,10 @@ const companySchema = mongoose.Schema(
     stripe_customer_id:{
       type: String,
       default: '',
+    },
+    address: {
+      type: String,
+      default: '',
     }
   },
   {

@@ -8,7 +8,7 @@ const { authenticateToken } = require("../middlewares/token_authenticator");
 const router = express.Router();
 
 // ? API to create a company
-router.post(apiEnum.CREATE, companyController.create);
+router.post(apiEnum.CREATE, authenticateToken, companyController.create);
 
 // ? API to get all company using querystring
 router.get(apiEnum.GET_ALL, process_query, companyController.getAllCompany);
