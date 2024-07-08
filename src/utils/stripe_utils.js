@@ -4,34 +4,79 @@ const { currency } = require("../utils/enums");
 const { createError } = require("../common/error");
 
 // ^ create product and price utils
-const createProduct = async (
+// const createProduct = async (
+//   name,
+//   unit_amount,
+//   currency,
+//   interval,
+//   interval_count = 1
+// ) => {
+//   try {
+//     const product = await stripe.products.create({
+//       name,
+//     });
+
+//     const price = await stripe.prices.create({
+//       unit_amount, // Price amount in the smallest currency unit (e.g., cents for USD)
+//       currency: currency ?? currency.USD,
+//       product: product.id, // Associate the price with the product created above
+//       nickname: name, // Set the nickname for the price
+//       recurring: {
+//         interval, // Example: setting a monthly recurring price
+//         interval_count,
+//       },
+//     });
+
+//     return price;
+//   } catch (error) {
+//     throw createError(500, "product price creation failed");
+//   }
+// };
+
+// ^ create product and price utils
+const createProductWithMultiplePrices = async (
   name,
-  unit_amount,
-  currency,
-  interval,
-  interval_count = 1
+  unit_amount_monthly,
+  unit_amount_yearly,
+  currency
 ) => {
   try {
     const product = await stripe.products.create({
       name,
     });
 
-    const price = await stripe.prices.create({
-      unit_amount, // Price amount in the smallest currency unit (e.g., cents for USD)
-      currency: currency ?? currency.USD,
-      product: product.id, // Associate the price with the product created above
-      nickname: name, // Set the nickname for the price
+    const monthlyPrice = await stripe.prices.create({
+      unit_amount: unit_amount_monthly * 100,
+      currency: currency || 'usd',
+      product: product.id,
+      nickname: `${name} Monthly`,
       recurring: {
-        interval, // Example: setting a monthly recurring price
-        interval_count,
+        interval: 'month',
+        interval_count: 1,
       },
     });
 
-    return price;
+    const yearlyPrice = await stripe.prices.create({
+      unit_amount: unit_amount_yearly * 100,
+      currency: currency || 'usd',
+      product: product.id,
+      nickname: `${name} Yearly`,
+      recurring: {
+        interval: 'year',
+        interval_count: 1,
+      },
+    });
+
+    return {
+      product,
+      monthlyPrice,
+      yearlyPrice,
+    };
   } catch (error) {
-    throw createError(500, "product price creation failed");
+    throw new Error("Product price creation failed: " + error.message);
   }
 };
+
 
 // ^ create stripe customer
 const createStripeCustomer = async (email) => {
@@ -75,9 +120,8 @@ const subscriptionSession = async (
           package_id: packageId,
         },
       },
-      
     });
-    console.log("session subscription session", session)
+    console.log("session subscription session", session);
     return session;
   } catch (error) {
     console.error(error);
@@ -105,5 +149,5 @@ module.exports = {
   createStripeCustomer,
   subscriptionSession,
   getAllSubscription,
-  createProduct,
+  createProductWithMultiplePrices
 };

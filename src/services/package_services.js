@@ -1,33 +1,71 @@
 const mongoose = require("mongoose");
 const Package = require("../models/package");
 const { createError } = require("../common/error");
-const { createProduct } = require("../utils/stripe_utils");
+const { createProductWithMultiplePrices } = require("../utils/stripe_utils");
 
 // & Function to create a new package
+// const createPackage = async (packageObj, session) => {
+//   try {
+//     //TODO: create a stripe product for this package and put price id in packageObj as stripe_price_id
+//     const product = await createProduct(
+//       packageObj.name,
+//       packageObj.price,
+//       packageObj.currency,
+//       packageObj.duration
+//     );
+//     if (!product) {
+//       throw createError(500, "Failed to create stripe product");
+//     }
+//     packageObj.stripe_price_id = product.id;
+//     const packageCollection = await new Package(packageObj);
+//     const package = await packageCollection.save({ session });
+//     if (package) {
+//       return package;
+//     } else {
+//       throw createError(400, "Package couldn't found");
+//     }
+//   } catch (err) {
+//     throw err;
+//   }
+// };
+
 const createPackage = async (packageObj, session) => {
   try {
-    //TODO: create a stripe product for this package and put price id in packageObj as stripe_price_id
-    const product = await createProduct(
-      packageObj.name,
-      packageObj.price,
-      packageObj.currency,
-      packageObj.duration
-    );
-    if (!product) {
-      throw createError(500, "Failed to create stripe product");
+    // Ensure that both monthly and yearly prices are provided
+    if (!packageObj.price.monthly.price || !packageObj.price.yearly.price) {
+      throw new Error("Both monthly and yearly unit amounts must be provided");
     }
-    packageObj.stripe_price_id = product.id;
-    const packageCollection = await new Package(packageObj);
+
+    // Create Stripe product and prices
+    const { product, monthlyPrice, yearlyPrice } = await createProductWithMultiplePrices(
+      packageObj.name,
+      parseInt(packageObj.price.monthly.price),
+      parseInt(packageObj.price.yearly.price),
+      packageObj.price.monthly.currency // Assuming currency is the same for both monthly and yearly prices
+    );
+
+    if (!product || !monthlyPrice || !yearlyPrice) {
+      throw createError(500, "Failed to create Stripe product or prices");
+    }
+
+    // Update packageObj with Stripe price IDs
+    packageObj.price.monthly.stripe_id = monthlyPrice.id;
+    packageObj.price.yearly.stripe_id = yearlyPrice.id;
+
+    // Create and save the package
+    const packageCollection = new Package(packageObj);
     const package = await packageCollection.save({ session });
+
     if (package) {
       return package;
     } else {
-      throw createError(400, "Package couldn't found");
+      throw createError(400, "Package couldn't be found");
     }
   } catch (err) {
     throw err;
   }
 };
+
 
 // & Function to get packages using querystring
 const getPackageUsingQureystring = async (req, session) => {

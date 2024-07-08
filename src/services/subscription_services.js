@@ -11,7 +11,7 @@ const Package = require("../models/package");
 // & get the product price list from stripe
 const getPriceService = async () => {
   try {
-    const prices = await stripe.prices.list();
+    const prices = await Package.find({});
     if (!prices) {
       throw createError(500, "Prices fetch failed");
     }
