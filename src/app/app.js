@@ -6,6 +6,8 @@ require('events').EventEmitter.defaultMaxListeners = 100;
 
 const app = express();
 
+app.use('/webhook', bodyParser.raw({ type: '*/*' }));
+// app.use(bodyParser.raw({ type: '*/*' }))
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -46,6 +48,7 @@ app.get("/", (req, res, next) => {
   }
 });
 
+
 // ~ Router for authentication routes
 app.use('/auth', require('../routers/auth_router'));
 
@@ -72,6 +75,9 @@ app.use('/bots', require('../routers/bot_router'));
 
 // ~ Router for thread
 app.use('/threads', require('../routers/thread_router'));
+
+// ~ Router for subscription
+app.use('/invitation', require('../routers/invitation_router'));
 
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {

@@ -46,7 +46,12 @@ const createStripeCustomer = async (email) => {
 };
 
 // ^ Create a checkout session for a subscription
-const subscriptionSession = async (priceId, stripeCustomerId) => {
+const subscriptionSession = async (
+  priceId,
+  stripeCustomerId,
+  userId,
+  packageId
+) => {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -60,10 +65,22 @@ const subscriptionSession = async (priceId, stripeCustomerId) => {
       customer: stripeCustomerId, // customer: "cus_PgjmeMfjbx7SmI",
       success_url: process.env.STRIPE_SUCCESS_URL,
       cancel_url: process.env.STRIPE_CANCEL_URL,
+      // metadata: {
+      //   user_id: userId,
+      //   package_id: packageId,
+      // },
+      subscription_data: {
+        metadata: {
+          user_id: userId,
+          package_id: packageId,
+        },
+      },
+      
     });
-
+    console.log("session subscription session", session)
     return session;
   } catch (error) {
+    console.error(error);
     throw createError(500, "Checkout Session Error");
   }
 };
