@@ -47,7 +47,7 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-    hasCompany: {
+    has_company: {
       type: Boolean,
       default: false,
     }
