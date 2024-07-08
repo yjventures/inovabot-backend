@@ -4,6 +4,8 @@ const apiEnum = require('../utils/api_constant');
 const userController = require('../controllers/user_controller');
 const { process_query } = require("../middlewares/process_query");
 const { authenticateToken } = require("../middlewares/token_authenticator");
+const multer = require("multer");
+const uploadImage = require('../utils/upload_utils');
 
 const router = express.Router();
 
@@ -32,5 +34,10 @@ router.put(apiEnum.UPDATE_BY_ID, authenticateToken, userController.updateUserByI
 
 // ? API to delete user by ID
 router.delete(apiEnum.DELETE_BY_ID, authenticateToken, userController.deleteUserByID);
+
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+router.post(apiEnum.UPLOAD, upload.single("file"), uploadImage);
 
 module.exports = router;

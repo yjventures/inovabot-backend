@@ -23,7 +23,14 @@ const create = async (req, res, next) => {
     } else {
       const companyObj = {};
       for (let item in req?.body) {
-        companyObj[item] = req.body[item];
+        if (item === 'user_id') {
+          companyObj[item] = new mongoose.Types.ObjectId(req.body[item]);
+        } else {
+          companyObj[item] = req.body[item];
+        }
+      }
+      if (req?.user.id) {
+        companyObj.user_id = req.user.id;
       }
       const company = await createCompany(companyObj, session);
       if (company) {

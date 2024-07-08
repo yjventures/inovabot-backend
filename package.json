@@ -5,23 +5,27 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server,js",
+    "dev": "nodemon server.js",
     "start": "node server.js"
   },
   "author": "Yasir Uddin Ahamed",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.609.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-validator": "^7.1.0",
+    "generate-password": "^1.7.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.1",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.13",
     "nodemon": "^3.1.3",
     "openai": "^4.52.0",
-    "otp-generator": "^4.0.1"
+    "otp-generator": "^4.0.1",
+    "stripe": "^16.0.0"
   }
 }
