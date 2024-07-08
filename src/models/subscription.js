@@ -17,6 +17,10 @@ const subscriptionSchema = mongoose.Schema(
       default: null,
       ref: 'Company',
     },
+    subscription_id: {
+      type: String,
+      default: '',
+    }
   },
   {
     timestamps: true,

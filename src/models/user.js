@@ -43,6 +43,7 @@ const userSchema = mongoose.Schema(
       default: null,
       ref: 'Company'
     },
+    
   },
   {
     timestamps: true,

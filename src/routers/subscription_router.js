@@ -28,4 +28,9 @@ router.put(
   subscriptionController.saveSubscriptonInfo
 );
 
+router.post(
+  apiEnum.WEBHOOK,express.raw(),
+  subscriptionController.handleWebhook
+);
+
 module.exports = router;

@@ -4,9 +4,11 @@ const {
   getSubscriptionStatusService,
   billingPortalService,
   saveSubscriptionInfoService,
+  handleWebhookEvent,
 } = require("../services/subscription_services");
 const mongoose = require("mongoose");
 const { createError } = require("../common/error");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const getAllPrice = async (req, res, next) => {
   try {
@@ -22,7 +24,7 @@ const getAllPrice = async (req, res, next) => {
 
 const createStripeSubscription = async (req, res, next) => {
   try {
-    const { price_id, stripe_customer_id } = req.body;
+    const { price_id, stripe_customer_id, user_id, package_id } = req.body;
     if (!price_id || !stripe_customer_id) {
       return next(
         createError(
@@ -33,7 +35,9 @@ const createStripeSubscription = async (req, res, next) => {
     }
     const stripeSession = await createStripeSubscriptionService(
       price_id,
-      stripe_customer_id
+      stripe_customer_id,
+      user_id,
+      package_id
     );
     if (!stripeSession) {
       return next(createError(500, "Failed to create stripe subscription"));
@@ -58,12 +62,10 @@ const getSubscriptionInfo = async (req, res, next) => {
     if (!subscriptions) {
       return next(createError(500, "Failed to fetch subscriptions info"));
     }
-    res
-      .status(200)
-      .json({
-        message: "subscription info fetches successfully",
-        subscriptions,
-      });
+    res.status(200).json({
+      message: "subscription info fetches successfully",
+      subscriptions,
+    });
   } catch (err) {
     next(err);
   }
@@ -95,12 +97,10 @@ const saveSubscriptonInfo = async (req, res, next) => {
     if (subscriptionInfo) {
       await session.commitTransaction();
       session.endSession();
-      res
-        .status(200)
-        .json({
-          message: "subscription info saved successfully",
-          subscriptionInfo,
-        });
+      res.status(200).json({
+        message: "subscription info saved successfully",
+        subscriptionInfo,
+      });
     } else {
       await session.abortTransaction();
       session.endSession();
@@ -131,10 +131,48 @@ const billingPortalUrl = async (req, res, next) => {
   }
 };
 
+const handleWebhook = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  const sig = req.headers["stripe-signature"];
+  const payloadString = JSON.stringify(req.body, null, 2); // Ensure JSON.stringify includes formatting
+
+  // console.log("Received webhook payload:\n", payloadString);
+  const header = stripe.webhooks.generateTestHeaderString({
+    payload: payloadString,
+    secret: process.env.STRIPE_WEBHOOK_SECRET,
+  });
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      payloadString,
+      header,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+
+    // console.log("Successfully constructed event:", event);
+
+    await session.startTransaction(); // Start the transaction
+
+    await handleWebhookEvent(event, session);
+
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ received: true });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    console.log(`⚠️  Webhook signature verification failed: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+};
+
 module.exports = {
   getAllPrice,
   createStripeSubscription,
   getSubscriptionInfo,
   billingPortalUrl,
   saveSubscriptonInfo,
+  handleWebhook,
 };

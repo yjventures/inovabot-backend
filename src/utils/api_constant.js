@@ -9,10 +9,13 @@ const apiEnum = {
   DELETE_BY_ID: '/delete/:id',
   FORGET_PASSWORD: '/forget-password', 
   RESET_PASSWORD: '/reset-password',
+  CHECK_PASSWORD: "/check-password",
   VERIFY: '/verify-otp',
   STRIPE_SUBSCRIPTION_INFO: '/subscription-info',
   STRIPE_BILLING_PORTAL: '/subscription-billing-portal',
-  STRIPE_UPDATE_INFO: '/update-subscription-info'
+  STRIPE_UPDATE_INFO: '/update-subscription-info',
+  WEBHOOK: '/webhook',
+  UPLOAD: "/upload"
 };
 
 module.exports = apiEnum;

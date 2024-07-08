@@ -4,9 +4,9 @@ const { subscriptionSession } = require("../utils/stripe_utils");
 const { updateCompanyById } = require("./company_services");
 const { findPackageById } = require("./package_services");
 const { findUserById } = require("./user_services");
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { createError } = require("../common/error");
-
+const Package = require("../models/package");
 
 // & get the product price list from stripe
 const getPriceService = async () => {
@@ -25,13 +25,17 @@ const getPriceService = async () => {
 // & create stripe subscription
 const createStripeSubscriptionService = async (
   price_id,
-  stripe_customer_id
+  stripe_customer_id,
+  user_id,
+  package_id
 ) => {
   try {
     // Create a checkout session for a subscription
     const stripeSession = await subscriptionSession(
       price_id,
-      stripe_customer_id
+      stripe_customer_id,
+      user_id,
+      package_id
     );
 
     // Send the URL of the checkout session as a JSON response
@@ -65,14 +69,15 @@ const saveSubscriptionInfoService = async (
   package_id,
   session,
   start_period,
-  end_period
+  end_period, subscriptionId
 ) => {
   try {
+    // console.log("entering the save info services------------>>>")
     const user = await findUserById(user_id, session);
     const companyId = user.company_id;
     // console.log("company id",companyId)
     const package = await findPackageById(package_id, session);
-    console.log(package_id)
+    // console.log(package_id);
 
     if (!companyId) {
       throw createError(400, "User is not associated with a company");
@@ -86,6 +91,7 @@ const saveSubscriptionInfoService = async (
       user_id: user_id,
       company_id: companyId,
       package_id: package_id,
+      subscription_id: subscriptionId
     });
     const newSubscription = await subscriptionCollection.save({ session });
 
@@ -105,7 +111,61 @@ const saveSubscriptionInfoService = async (
       throw createError(500, "Failed to update company info");
     }
 
+    // console.log("updateCompany",updateCompany)
     return updateCompany;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateSubscriptionInfoService = async (
+  user_id,
+  session,
+  start_period,
+  end_period,
+  planId, subscriptionId
+) => {
+  try {
+    // console.log("entering the save info services------------>>>")
+    const user = await findUserById(user_id, session);
+    const companyId = user.company_id;
+
+    if (!companyId) {
+      throw createError(400, "User is not associated with a company");
+    }
+
+    const query = { user_id: user_id, company_id: companyId };
+    const package = await Package.findOne({ stripe_price_id: planId });
+    const updateData = { package_id: package._id, subscription_id: subscriptionId };
+
+    const subscriptionDoc = await subscription.findOne(query).session(session);
+    if (subscriptionDoc) {
+      // Update the subscription document
+      const updatedSubscription = await subscription.findByIdAndUpdate(
+        subscriptionDoc._id,
+        updateData,
+        { new: true, session }
+      );
+
+      const last_subscribed = convertUnixTimestampToDate(start_period);
+      const expires_at = convertUnixTimestampToDate(end_period);
+      const body = {
+        last_subscribed,
+        expires_at,
+      };
+
+      const updateCompany = await updateCompanyById(companyId, body, session);
+
+      if (!updateCompany) {
+        throw createError(500, "Failed to update company info");
+      }
+
+      // console.log("updateCompany", updateCompany)
+      return updateCompany;
+    } else {
+      throw createError(404, "Subscription not found");
+    }
+    // console.log("subscription docs",subscriptionDoc)
   } catch (error) {
     throw error;
   }
@@ -129,10 +189,121 @@ const billingPortalService = async (stripe_customer_id) => {
   }
 };
 
+// & web hook
+const handleCheckoutSessionCompleted = async (eventSession, session) => {
+  try {
+    // console.log("Received session:", eventSession);
+
+    // Extract subscription ID from session
+    const subscriptionId = eventSession.id; // Assuming 'id' in session refers to the subscription ID
+    console.log("Subscription ID: from when save", subscriptionId);
+
+    // Retrieve subscription details
+    // const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    // console.log("Subscription details:", subscription);
+
+    // Extract metadata from session for custom processing
+    const userId = eventSession.metadata.user_id;
+    const packageId = eventSession.metadata.package_id;
+    const startPeriod = eventSession.current_period_start;
+    const endPeriod = eventSession.current_period_end;
+
+    console.log("User ID:", userId);
+    console.log("Package ID:", packageId);
+    console.log("Start period:", startPeriod);
+    console.log("End period:", endPeriod);
+
+    // Example of saving subscription information using a service function
+    await saveSubscriptionInfoService(
+      userId,
+      packageId,
+      session,
+      startPeriod,
+      endPeriod, subscriptionId
+    );
+
+    // console.log(`Subscription processed: ${subscription.id}`);
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error(`Error processing subscription: ${err.message}`);
+    throw createError(500, `Error processing subscription: ${err.message}`);
+  }
+};
+
+const handleUpdateSessionCompleted = async (eventSession, session) => {
+  try {
+    // console.log("Received update session: id====>", eventSession.plan.id);
+    const planId = eventSession.plan.id;
+    // Extract subscription ID from session
+    const subscriptionId = eventSession.id; // Assuming 'id' in session refers to the subscription ID
+    // console.log("Subscription ID:", subscriptionId);
+
+    // Retrieve subscription details
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    console.log("Subscription details:", subscription);
+
+    // Extract metadata from session for custom processing
+    const userId = eventSession.metadata.user_id;
+    const packageId = eventSession.metadata.package_id;
+    const startPeriod = subscription.current_period_start;
+    const endPeriod = subscription.current_period_end;
+
+    console.log("User ID:", userId);
+    console.log("Package ID:", packageId);
+    console.log("Start period:", startPeriod);
+    console.log("End period:", endPeriod);
+
+    // Example of saving subscription information using a service function
+    await updateSubscriptionInfoService(
+      userId,
+      session,
+      startPeriod,
+      endPeriod,
+      planId, subscriptionId
+    );
+
+    // console.log(`Subscription processed: ${subscription.id}`);
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error(`Error processing subscription: ${err.message}`);
+    throw createError(500, `Error processing subscription: ${err.message}`);
+  }
+};
+const handleWebhookEvent = async (event, session) => {
+  try {
+    switch (event.type) {
+      case "customer.subscription.created":
+        // Handle subscription creation event
+        const subscriptionId = event.data.object.id;
+
+        await handleCheckoutSessionCompleted(event.data.object, session);
+        break;
+      case "checkout.session.completed":
+        console.log("checkout.session.completed");
+        break;
+      case "customer.subscription.updated":
+        await handleUpdateSessionCompleted(event.data.object, session);
+        break;
+      case "customer.subscription.deleted":
+        console.log("customer.subscription.deleted");
+        break;
+      //... handle other event types
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+  } catch (err) {
+    console.error(`Error handling event type ${event.type}: ${err.message}`);
+    throw err;
+  }
+};
+
 module.exports = {
   getPriceService,
   createStripeSubscriptionService,
   getSubscriptionStatusService,
   billingPortalService,
   saveSubscriptionInfoService,
+  handleWebhookEvent,
 };
