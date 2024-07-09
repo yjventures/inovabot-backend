@@ -1,12 +1,16 @@
 const { convertUnixTimestampToDate } = require("../common/manage_date");
 const subscription = require("../models/subscription");
 const { subscriptionSession } = require("../utils/stripe_utils");
-const { updateCompanyById } = require("./company_services");
+const {
+  updateCompanyById,
+  findCompanyByObject,
+} = require("./company_services");
 const { findPackageById } = require("./package_services");
 const { findUserById } = require("./user_services");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { createError } = require("../common/error");
 const Package = require("../models/package");
+const Company = require("../models/company");
 
 // & get the product price list from stripe
 const getPriceService = async () => {
@@ -25,11 +29,17 @@ const getPriceService = async () => {
 // & create stripe subscription
 const createStripeSubscriptionService = async (
   price_id,
-  stripe_customer_id,
   user_id,
-  package_id
+  package_id,
+  session
 ) => {
   try {
+    const company = await findCompanyByObject({ user_id }, session);
+    const stripe_customer_id = company?.stripe_customer_id;
+
+    if (!stripe_customer_id) {
+      throw createError(400, "stripe customer id not found");
+    }
     // Create a checkout session for a subscription
     const stripeSession = await subscriptionSession(
       price_id,
@@ -39,6 +49,9 @@ const createStripeSubscriptionService = async (
     );
 
     // Send the URL of the checkout session as a JSON response
+    if (!stripeSession.url) {
+      throw createError(500, "Failed to create checkout session");
+    }
     return stripeSession.url;
   } catch (error) {
     // Log any errors that occur
@@ -69,7 +82,8 @@ const saveSubscriptionInfoService = async (
   package_id,
   session,
   start_period,
-  end_period, subscriptionId
+  end_period,
+  subscriptionId
 ) => {
   try {
     // console.log("entering the save info services------------>>>")
@@ -91,7 +105,7 @@ const saveSubscriptionInfoService = async (
       user_id: user_id,
       company_id: companyId,
       package_id: package_id,
-      subscription_id: subscriptionId
+      subscription_id: subscriptionId,
     });
     const newSubscription = await subscriptionCollection.save({ session });
 
@@ -123,7 +137,8 @@ const updateSubscriptionInfoService = async (
   session,
   start_period,
   end_period,
-  planId, subscriptionId
+  planId,
+  subscriptionId
 ) => {
   try {
     // console.log("entering the save info services------------>>>")
@@ -136,7 +151,10 @@ const updateSubscriptionInfoService = async (
 
     const query = { user_id: user_id, company_id: companyId };
     const package = await Package.findOne({ stripe_price_id: planId });
-    const updateData = { package_id: package._id, subscription_id: subscriptionId };
+    const updateData = {
+      package_id: package._id,
+      subscription_id: subscriptionId,
+    };
 
     const subscriptionDoc = await subscription.findOne(query).session(session);
     if (subscriptionDoc) {
@@ -219,7 +237,8 @@ const handleCheckoutSessionCompleted = async (eventSession, session) => {
       packageId,
       session,
       startPeriod,
-      endPeriod, subscriptionId
+      endPeriod,
+      subscriptionId
     );
 
     // console.log(`Subscription processed: ${subscription.id}`);
@@ -260,7 +279,8 @@ const handleUpdateSessionCompleted = async (eventSession, session) => {
       session,
       startPeriod,
       endPeriod,
-      planId, subscriptionId
+      planId,
+      subscriptionId
     );
 
     // console.log(`Subscription processed: ${subscription.id}`);
