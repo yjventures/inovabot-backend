@@ -130,11 +130,23 @@ const deleteCompanyById = async (id, session) => {
     throw err;
   }
 };
-
+const findCompanyByObject = async (object, session)=>{
+  try {
+    const company = await Company.findOne(object).session(session).lean();
+    if (company) {
+      return company;
+    } else {
+      throw createError(404, "Company not found");
+    }
+  } catch (err) {
+    throw err;
+  }
+}
 module.exports = {
   createCompany,
   getCompanyUsingQureystring,
   findCompanyById,
   updateCompanyById,
   deleteCompanyById,
+  findCompanyByObject,
 };

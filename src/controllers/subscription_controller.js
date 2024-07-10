@@ -8,6 +8,7 @@ const {
 } = require("../services/subscription_services");
 const mongoose = require("mongoose");
 const { createError } = require("../common/error");
+const { findUserById } = require("../services/user_services");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const getAllPrice = async (req, res, next) => {
@@ -23,29 +24,36 @@ const getAllPrice = async (req, res, next) => {
 };
 
 const createStripeSubscription = async (req, res, next) => {
+  const session = await mongoose.startSession();
+
   try {
-    const { price_id, stripe_customer_id, user_id, package_id } = req.body;
-    if (!price_id || !stripe_customer_id) {
-      return next(
-        createError(
-          400,
-          "Both price id and stripe customer id must be provided"
-        )
-      );
+    session.startTransaction();
+    const { id } = req.user;
+    const { price_id, package_id } = req.body;
+    if (!price_id || !package_id) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "price id and package_id must be provided"));
     }
     const stripeSession = await createStripeSubscriptionService(
       price_id,
-      stripe_customer_id,
-      user_id,
-      package_id
+      id,
+      package_id,
+      session
     );
     if (!stripeSession) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(500, "Failed to create stripe subscription"));
     }
+    await session.commitTransaction();
+    session.endSession();
     res
       .status(200)
       .json({ message: "generate checkout URL successfully", stripeSession });
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     next(err);
   }
 };
@@ -117,16 +125,24 @@ const billingPortalUrl = async (req, res, next) => {
   try {
     const { stripe_customer_id } = req.body;
     if (!stripe_customer_id) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "stripe customer id must be provided"));
     }
     const portalSessionUrl = await billingPortalService(stripe_customer_id);
     if (!portalSessionUrl) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(500, "Failed to create billing portal session"));
     }
+    await session.commitTransaction();
+    session.endSession();
     res
       .status(200)
       .json({ message: "Portal link generated successful", portalSessionUrl });
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     next(err);
   }
 };
@@ -153,7 +169,7 @@ const handleWebhook = async (req, res, next) => {
 
     // console.log("Successfully constructed event:", event);
 
-    await session.startTransaction(); // Start the transaction
+    session.startTransaction(); // Start the transaction
 
     await handleWebhookEvent(event, session);
 
@@ -164,7 +180,8 @@ const handleWebhook = async (req, res, next) => {
     await session.abortTransaction();
     session.endSession();
     console.log(`⚠️  Webhook signature verification failed: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    // return res.status(400).send(`Webhook Error: ${err.message}`);
+    return next(createError(503, `Webhook Error: ${err.message}`));
   }
 };
 

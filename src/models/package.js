@@ -42,13 +42,19 @@
 const mongoose = require("mongoose");
 
 const featureSchema = mongoose.Schema({
-  feature: {
+  name: {
+    type: String,
+    required: true,
+  },
+  keyword: {
     type: String,
     required: true,
   },
   type: {
-    type: String, // Store the type as a string, e.g., 'Number', 'Boolean'
+    type: String,
+    enum: ["String", "Boolean"], 
     required: true,
+    default: ""
   },
   value: {
     type: mongoose.Schema.Types.Mixed,

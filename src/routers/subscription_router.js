@@ -1,6 +1,7 @@
 const express = require("express");
 const apiEnum = require("../utils/api_constant");
 const subscriptionController = require("../controllers/subscription_controller");
+const { authenticateToken } = require("../middlewares/token_authenticator");
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const router = express.Router();
 router.get(apiEnum.GET_ALL, subscriptionController.getAllPrice);
 
 // ? API to get the subscription checkout url
-router.post(apiEnum.CREATE, subscriptionController.createStripeSubscription);
+router.post(apiEnum.CREATE,authenticateToken, subscriptionController.createStripeSubscription);
 
 // ? API to get all stripe subscription info
 router.get(

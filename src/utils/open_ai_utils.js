@@ -4,8 +4,7 @@ const fs = require("fs");
 require("dotenv").config();
 
 const openAiConfig = {
-  apiKey: process.env.OpenAI_API,
-  
+  apiKey: process.env.OPENAI_API,
 };
 
 const openai = new OpenAI(openAiConfig);
