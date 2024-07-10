@@ -6,6 +6,7 @@ const {
   getAssistantById,
   updateAssistantById,
   deleteAssistantById,
+  createVectorStore,
 } = require("../utils/open_ai_utils");
 
 // & Function to create bot instructions
@@ -68,8 +69,8 @@ const createParam = (botObj) => {
     if (botObj.max_tokens) {
       botBody.max_tokens = botObj.max_token;
     }
-    if (botObj.tools) {
-      botBody.tools = botObj.tools;
+    if (botObj.tool_resources) {
+      botBody.tool_resources = botObj.tool_resources;
     }
     return botBody;
   } catch (err) {
@@ -84,6 +85,9 @@ const createBot = async (botObj, session) => {
       {
         type: "code_interpreter",
       },
+      {
+        type: "file_search",
+      }
     ];
     if (botObj.impage_display) {
       tools.push({
@@ -106,6 +110,16 @@ const createBot = async (botObj, session) => {
       });
     }
     botObj.tools = tools;
+    const vectorStore = await createVectorStore(botObj.name);
+    if (!vectorStore.id) {
+      throw createError(400, "Can't create vector storage in open AI");
+    }
+    botObj.vector_store_id = vectorStore.id;
+    botObj.tool_resources = {
+      file_search: {
+        vector_store_ids: [vectorStore.id]
+      }
+    }
     const botBody = createParam(botObj);
     const openAiBot = await createAssistant(botBody);
     if (openAiBot?.id) {

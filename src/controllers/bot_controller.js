@@ -8,6 +8,7 @@ const {
   updateBotById,
   deleteBotById,
 } = require("../services/bot_services");
+const { findCompanyByObject  } = require("../services/company_services");
 const { createError } = require("../common/error");
 
 // * Function to create a bot/assistant
@@ -21,7 +22,12 @@ const create = async (req, res, next) => {
       session.endSession();
       return next(createError(400, errors));
     }
-    const botObj = {};
+    const id = req.user.id;
+    const company = await findCompanyByObject({user_id: id}, session);
+    const botObj = {
+      user_id: id,
+      company_id: company._id,
+    };
     for (let item in req?.body) {
       if (item === "company_id" || item === "user_id") {
         botObj[item] = new mongoose.Types.ObjectId(req.body[item]);

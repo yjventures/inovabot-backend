@@ -1,5 +1,6 @@
 const { OpenAI } = require("openai");
 const { EventEmitter } = require("events");
+const fs = require("fs");
 require("dotenv").config();
 
 const openAiConfig = {
@@ -185,6 +186,25 @@ const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter, inst
   }
 };
 
+// ^ Function to create a vector store
+const createVectorStore = async (name) => {
+  try {
+    let vectorStore = await openai.beta.vectorStores.create({name});
+    return vectorStore;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to add files in assistant
+const addFiles = async (assistant_id, file_paths, name) => {
+  try {
+    // TODO: Complete this
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createAssistant,
   listOfAssistants,
@@ -195,6 +215,7 @@ module.exports = {
   getMessagesOfThread,
   runThread,
   getThread,
+  createVectorStore,
 };
 
 // * Here is a template for the tools
