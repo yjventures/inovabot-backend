@@ -20,6 +20,10 @@ const botSchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    vector_store_id: {
+      type: String,
+      default: '',
+    },
     logo_light: {
       type: String,
       default: '',
