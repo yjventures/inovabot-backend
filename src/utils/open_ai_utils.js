@@ -195,10 +195,33 @@ const createVectorStore = async (name) => {
   }
 };
 
-// ^ Function to add files in assistant
-const addFiles = async (assistant_id, file_paths, name) => {
+// ^ Function to add files in vector store
+const addFileInVectorStore = async (vector_store_id, file_path) => {
   try {
-    // TODO: Complete this
+    const file = await openai.files.create({
+      file: fs.createReadStream(file_path),
+      purpose: "assistants",
+    });
+    const myVectorStoreFile = await openai.beta.vectorStores.files.create(
+      vector_store_id,
+      {
+        file_id: file.id
+      }
+    );
+    return myVectorStoreFile;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to delete a file from vector store
+const deleteFileInVectorStore = async (vector_store_id, file_id) => {
+  try {
+    const deletedVectorStoreFile = await openai.beta.vectorStores.files.del(
+      vector_store_id,
+      file_id
+    );
+    return deletedVectorStoreFile.deleted;
   } catch (err) {
     throw err;
   }
@@ -215,6 +238,8 @@ module.exports = {
   runThread,
   getThread,
   createVectorStore,
+  addFileInVectorStore,
+  deleteFileInVectorStore,
 };
 
 // * Here is a template for the tools
