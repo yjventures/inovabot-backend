@@ -163,13 +163,13 @@ const getBotUsingQureystring = async (req, session) => {
         query[item] = req?.query[item];
       }
     }
-    const botes = await Bot.find(query)
+    const bots = await Bot.find(query)
       .sort(sortBy)
       .skip((page - 1) * limit)
       .limit(limit)
       .session(session);
     const count = await Bot.countDocuments(query, { session });
-    return { botes, total: count };
+    return { bots, total: count };
   } catch (err) {
     throw createError(404, "Bot not found");
   }

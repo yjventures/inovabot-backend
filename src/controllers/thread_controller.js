@@ -20,12 +20,12 @@ const getThreadByID = async (req, res, next) => {
       return next(createError(400, "Thread ID not provided"));
     }
     if (req.body?.thread_id === 'new') {
-      if (!req?.body?.assistant_id) {
+      if (!req?.body?.bot_id) {
         await session.abortTransaction();
         session.endSession();
         return next(createError(400, "Assistant ID not provided for first time"));
-      } 
-      query.assistant_id = req.body?.assistant_id;
+      }
+      query.bot_id = req?.body?.bot_id;
       if (req?.body?.user_id) {
         query.user_id = req.body?.user_id;
       }
