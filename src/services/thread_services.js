@@ -63,7 +63,14 @@ const getMessageById = async (id, session) => {
     const thread = await getThreadById(id, session);
     const messages = await getMessagesOfThread(thread.thread_id);
     if (messages) {
-      return messages;
+      const tailoredMessage = messages.map((item) => (
+        {
+          id: item.id,
+          role: item.role,
+          content: item.content
+        }
+      ));
+      return tailoredMessage;
     } else {
       throw createError(404, "No messages available");
     }

@@ -7,6 +7,8 @@ const {
   updateAssistantById,
   deleteAssistantById,
   createVectorStore,
+  addFileInVectorStore,
+  deleteFileInVectorStore,
 } = require("../utils/open_ai_utils");
 
 // & Function to create bot instructions
@@ -257,19 +259,43 @@ const updateBotById = async (id, body, session) => {
 const deleteBotById = async (id, session) => {
   try {
     const bot = await findBotById(id, session);
-    if (!bot) {
-      throw createError(404, "Bot not found in open-ai");
-    }
     const isDeleted = await deleteAssistantById(bot.assistant_id);
     if (!isDeleted) {
       throw createError(400, "Bot not deleted in open-ai");
     }
     const deleteBot = await Bot.findByIdAndDelete(id).session(session);
     if (!deleteBot) {
-      throw createError(404, "Bot not found in db but deleted in open-ai");
+      throw createError(404, "Bot not deleted in db but deleted in open-ai");
     } else {
       return { message: "Bot is deleted" };
     }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// & Function to add file to bot by ID
+const addFileToBot = async (id, file_path, session) => {
+  try {
+    const bot = await findBotById(id, session);
+    const myVectorStoreFile = await addFileInVectorStore(bot.vector_store_id, file_path);
+    const file_id = myVectorStoreFile?.id;
+    if (!file_id) {
+      throw createError(400, "File not created in open-ai");
+    } else {
+      return file_id;
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// & Function to delete file from bot by ID
+const deleteFileFromBot = async (id, file_id, session) => {
+  try {
+    const bot = await findBotById(id, session);
+    const status = await deleteFileInVectorStore(bot.vector_store_id, file_id);
+    return { message: "File deleted successfully" };
   } catch (err) {
     throw err;
   }
@@ -282,4 +308,6 @@ module.exports = {
   findBotById,
   updateBotById,
   deleteBotById,
+  addFileToBot,
+  deleteFileFromBot,
 };

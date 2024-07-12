@@ -4,7 +4,9 @@ const apiEnum = require('../utils/api_constant');
 const botController = require('../controllers/bot_controller');
 const { process_query } = require("../middlewares/process_query");
 const { authenticateToken } = require("../middlewares/token_authenticator");
+const { setPathForUploader } = require("../middlewares/file_uploader");
 
+const upload = setPathForUploader();
 const router = express.Router();
 
 // ? API to create a bot/assistant
@@ -31,5 +33,11 @@ router.put(apiEnum.UPDATE_BY_ID, authenticateToken, botController.updateBotByID)
 
 // ? API to delete a bot by ID
 router.delete(apiEnum.DELETE_BY_ID, authenticateToken, botController.deleteBotByID);
+
+// ? API to upload a file to a bot
+router.post(apiEnum.UPLOAD, upload.single('file'), botController.uploadFileToBot);
+
+// ? API to delete a file from a bot
+router.post(apiEnum.DELETE_FILE, botController.deleteFileFromBotByID);
 
 module.exports = router;
