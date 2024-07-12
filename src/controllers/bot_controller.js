@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const path = require("path");
+const fs = require("fs");
 const { validationResult } = require("express-validator");
 const {
   createBotInstructions,
@@ -7,6 +9,8 @@ const {
   findBotById,
   updateBotById,
   deleteBotById,
+  addFileToBot,
+  deleteFileFromBot,
 } = require("../services/bot_services");
 const { findCompanyByObject  } = require("../services/company_services");
 const { createError } = require("../common/error");
@@ -152,10 +156,58 @@ const deleteBotByID = async (req, res, next) => {
   }
 };
 
+// * Function to upload a file to the bot by ID
+const uploadFileToBot = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const fullPath = path.join(
+      process.env.BULK_FILE_LOCATION,
+      req.file.filename
+    );
+    const bot_id = req?.body?.bot_id;
+    if (!bot_id) {
+      return next(createError(400, "bot_id not provided"));
+    }
+    const file_id = await addFileToBot(bot_id, fullPath, session);
+    fs.unlinkSync(fullPath);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ message: "File added successfully", file_id });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+// * Function to delete a file from Bot by ID
+const deleteFileFromBotByID = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const bot_id = req?.body?.bot_id;
+    const file_id = req?.body?.file_id;
+    if (!bot_id || !file_id) {
+      return next(createError(400, "Both bot_id and file_id need to be provided"));
+    }
+    const message = await deleteFileFromBot(bot_id, file_id, session);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json(message);
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
 module.exports = {
   create,
   getAll,
   getBotByID,
   updateBotByID,
   deleteBotByID,
+  uploadFileToBot,
+  deleteFileFromBotByID,
 };

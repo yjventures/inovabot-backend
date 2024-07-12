@@ -221,7 +221,14 @@ const deleteFileInVectorStore = async (vector_store_id, file_id) => {
       vector_store_id,
       file_id
     );
-    return deletedVectorStoreFile.deleted;
+    if (!deletedVectorStoreFile?.deleted) {
+      throw createError(400, "Could not delete file from open-ai assistant");
+    }
+    const file = await openai.files.del(file_id);
+    if (!file.deleted) {
+      throw createError(400, "Could not delete file from open-ai storage");
+    }
+    return file.deleted;
   } catch (err) {
     throw err;
   }
