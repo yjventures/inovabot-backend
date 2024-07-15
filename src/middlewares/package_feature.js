@@ -57,11 +57,11 @@ const packageFeature = async (req, res, next) => {
       ...package,
       ...value,
     };
-    console.log(req.body.package);
+    // console.log(req.body.package);
 
     next();
   } catch (error) {
-    console.error("Error in findFeatureMiddleware:", error);
+    // console.error("Error in findFeatureMiddleware:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
