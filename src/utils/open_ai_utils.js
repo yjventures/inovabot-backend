@@ -1,5 +1,6 @@
 const { OpenAI } = require("openai");
 const { EventEmitter } = require("events");
+const fs = require("fs");
 require("dotenv").config();
 
 const openAiConfig = {
@@ -184,6 +185,55 @@ const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter, inst
   }
 };
 
+// ^ Function to create a vector store
+const createVectorStore = async (name) => {
+  try {
+    let vectorStore = await openai.beta.vectorStores.create({name});
+    return vectorStore;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to add files in vector store
+const addFileInVectorStore = async (vector_store_id, file_path) => {
+  try {
+    const file = await openai.files.create({
+      file: fs.createReadStream(file_path),
+      purpose: "assistants",
+    });
+    const myVectorStoreFile = await openai.beta.vectorStores.files.create(
+      vector_store_id,
+      {
+        file_id: file.id
+      }
+    );
+    return myVectorStoreFile;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to delete a file from vector store
+const deleteFileInVectorStore = async (vector_store_id, file_id) => {
+  try {
+    const deletedVectorStoreFile = await openai.beta.vectorStores.files.del(
+      vector_store_id,
+      file_id
+    );
+    if (!deletedVectorStoreFile?.deleted) {
+      throw createError(400, "Could not delete file from open-ai assistant");
+    }
+    const file = await openai.files.del(file_id);
+    if (!file.deleted) {
+      throw createError(400, "Could not delete file from open-ai storage");
+    }
+    return file.deleted;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createAssistant,
   listOfAssistants,
@@ -194,6 +244,9 @@ module.exports = {
   getMessagesOfThread,
   runThread,
   getThread,
+  createVectorStore,
+  addFileInVectorStore,
+  deleteFileInVectorStore,
 };
 
 // * Here is a template for the tools

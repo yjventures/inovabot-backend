@@ -18,7 +18,9 @@ const apiEnum = {
   UPLOAD: "/upload",
   GET_THREAD: '/get-thread',
   RUN_THREAD_BY_ID: '/run/:id',
-  GET_MESSAGE_LIST_BY_ID: '/messages/:id'
+  GET_MESSAGE_LIST_BY_ID: '/messages/:id',
+  UPLOAD: '/upload',
+  DELETE_FILE: '/delete-file',
 };
 
 module.exports = apiEnum;

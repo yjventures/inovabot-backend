@@ -7,6 +7,7 @@ const {
   runThread,
   getThread,
 } = require("../utils/open_ai_utils");
+const { findBotById } = require("../services/bot_services");
 
 // & Function to create a new thread
 const createAThread = async (body, session) => {
@@ -62,7 +63,14 @@ const getMessageById = async (id, session) => {
     const thread = await getThreadById(id, session);
     const messages = await getMessagesOfThread(thread.thread_id);
     if (messages) {
-      return messages;
+      const tailoredMessage = messages.map((item) => (
+        {
+          id: item.id,
+          role: item.role,
+          content: item.content
+        }
+      ));
+      return tailoredMessage;
     } else {
       throw createError(404, "No messages available");
     }
@@ -75,7 +83,8 @@ const getMessageById = async (id, session) => {
 const runThreadById = async (id, message, eventEmitter, instructions, session) => {
   try {
     const thread = await getThreadById(id, session);
-    await runThread(thread.assistant_id, thread.thread_id, message, eventEmitter, instructions);
+    const bot = await findBotById(thread.bot_id, session);
+    await runThread(bot.assistant_id, thread.thread_id, message, eventEmitter, instructions);
   } catch (err) {
     throw err;
   }
