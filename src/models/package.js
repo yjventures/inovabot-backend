@@ -52,7 +52,7 @@ const featureSchema = mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["String", "Boolean"], 
+    enum: ["String", "Boolean", "Number"], 
     required: true,
     default: ""
   },
