@@ -1,4 +1,4 @@
-const stripe = require("stripe")("your_stripe_secret_key"); // Replace with your Stripe secret key
+const stripe = require("stripe")();
 
 const checkSubscriptionStatus = async (req, res, next) => {
   const subscriptionId = req.body.subscriptionId;
@@ -26,4 +26,4 @@ const checkSubscriptionStatus = async (req, res, next) => {
 };
 
 // Export the middleware function
-module.exports = checkSubscriptionStatus;
+module.exports = { checkSubscriptionStatus };
