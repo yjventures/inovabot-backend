@@ -161,21 +161,30 @@ const uploadFileToBot = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    // TODO: Server function
+    if (!req.file) {
+      return next(createError(400, "File not uploaded"));
+    }
+    const fileLocation = process.env.BULK_FILE_LOCATION;
+    if (!fileLocation) {
+      return next(createError(400, "env for file location is missing"));
+    }
     const fullPath = path.join(
-      process.env.BULK_FILE_LOCATION,
+      fileLocation,
       req.file.filename
     );
-    console.log(req.file);
     const bot_id = req?.body?.bot_id;
     if (!bot_id) {
       return next(createError(400, "bot_id not provided"));
     }
-    const file_id = await addFileToBot(bot_id, fullPath, session);
+    const package = req?.body?.package;
+    if (!package) {
+      return next(createError(400, "Package not found"));
+    }
+    const file = await addFileToBot(bot_id, fullPath, req.file, package, session);
     fs.unlinkSync(fullPath);
     await session.commitTransaction();
     session.endSession();
-    res.status(200).json({ message: "File added successfully", file_id });
+    res.status(200).json({ message: "File added successfully", file });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();

@@ -1,9 +1,10 @@
-const express = require('express');
+const express = require("express");
 const { body } = require("express-validator");
-const apiEnum = require('../utils/api_constant');
-const botController = require('../controllers/bot_controller');
+const apiEnum = require("../utils/api_constant");
+const botController = require("../controllers/bot_controller");
 const { process_query } = require("../middlewares/process_query");
 const { authenticateToken } = require("../middlewares/token_authenticator");
+const { packageFeature } = require("../middlewares/package_feature");
 const { setPathForUploader } = require("../middlewares/file_uploader");
 
 const upload = setPathForUploader();
@@ -12,7 +13,7 @@ const router = express.Router();
 // ? API to create a bot/assistant
 router.post(
   apiEnum.CREATE,
-   [
+  [
     body("name", "Name is required"),
     body("model", "Name is required"),
     body("user_id", "User ID is required"),
@@ -29,13 +30,27 @@ router.get(apiEnum.GET_ALL, process_query, botController.getAll);
 router.get(apiEnum.GET_BY_ID, botController.getBotByID);
 
 // ? API to update a bot using ID
-router.put(apiEnum.UPDATE_BY_ID, authenticateToken, botController.updateBotByID);
+router.put(
+  apiEnum.UPDATE_BY_ID,
+  authenticateToken,
+  botController.updateBotByID
+);
 
 // ? API to delete a bot by ID
-router.delete(apiEnum.DELETE_BY_ID, authenticateToken, botController.deleteBotByID);
+router.delete(
+  apiEnum.DELETE_BY_ID,
+  authenticateToken,
+  botController.deleteBotByID
+);
 
 // ? API to upload a file to a bot
-router.post(apiEnum.UPLOAD, upload.single('file'), botController.uploadFileToBot);
+router.post(
+  apiEnum.UPLOAD,
+  authenticateToken,
+  upload.single("file"),
+  packageFeature,
+  botController.uploadFileToBot
+);
 
 // ? API to delete a file from a bot
 router.post(apiEnum.DELETE_FILE, botController.deleteFileFromBotByID);

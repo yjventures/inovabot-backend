@@ -7,6 +7,14 @@ const fileSchema = mongoose.Schema(
       default: null,
       ref: 'Company',
     },
+    bot_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Bot',
+    },
+    thread_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Thread',
+    },
     name: {
       type: String,
       default: '',
