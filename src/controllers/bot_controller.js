@@ -161,10 +161,12 @@ const uploadFileToBot = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
+    // TODO: Server function
     const fullPath = path.join(
       process.env.BULK_FILE_LOCATION,
       req.file.filename
     );
+    console.log(req.file);
     const bot_id = req?.body?.bot_id;
     if (!bot_id) {
       return next(createError(400, "bot_id not provided"));
