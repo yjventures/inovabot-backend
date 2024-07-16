@@ -63,6 +63,9 @@ const getMessageById = async (id, session) => {
     const thread = await getThreadById(id, session);
     const messages = await getMessagesOfThread(thread.thread_id);
     if (messages) {
+      messages.sort((item1, item2) => {
+        return item1.created_at - item2.created_at;
+      });
       const tailoredMessage = messages.map((item) => (
         {
           id: item.id,

@@ -17,7 +17,7 @@ const addFile = async (fileObj, package, session) => {
       }
     ]);
     const totalSize = ((result.length) > 0 ? result[0].totalSize : 0) + fileObj.size;
-    if (package.total_store_size < totalSize) {
+    if (package.total_file_storage < totalSize) {
       throw createError(400, "Maximum storage exceeded");
     }
     const fileCollection = await new File(fileObj);
