@@ -10,6 +10,7 @@ const {
   addFileInVectorStore,
   deleteFileInVectorStore,
 } = require("../utils/open_ai_utils");
+const { addFile, getFile, deleteFile } = require("../services/file_services");
 
 // & Function to create bot instructions
 const createBotInstructions = (req) => {
@@ -89,7 +90,7 @@ const createBot = async (botObj, session) => {
       },
       {
         type: "file_search",
-      }
+      },
     ];
     if (botObj.impage_display) {
       tools.push({
@@ -102,8 +103,7 @@ const createBot = async (botObj, session) => {
             properties: {
               url: {
                 type: "string",
-                description:
-                  "the url of an image",
+                description: "the url of an image",
               },
             },
             required: ["url"],
@@ -119,9 +119,9 @@ const createBot = async (botObj, session) => {
     botObj.vector_store_id = vectorStore.id;
     botObj.tool_resources = {
       file_search: {
-        vector_store_ids: [vectorStore.id]
-      }
-    }
+        vector_store_ids: [vectorStore.id],
+      },
+    };
     const botBody = createParam(botObj);
     const openAiBot = await createAssistant(botBody);
     if (openAiBot?.id) {
@@ -226,8 +226,7 @@ const updateBotById = async (id, body, session) => {
             properties: {
               url: {
                 type: "string",
-                description:
-                  "the url of an image",
+                description: "the url of an image",
               },
             },
             required: ["url"],
@@ -275,15 +274,26 @@ const deleteBotById = async (id, session) => {
 };
 
 // & Function to add file to bot by ID
-const addFileToBot = async (id, file_path, session) => {
+const addFileToBot = async (id, file_path, file, package, session) => {
   try {
     const bot = await findBotById(id, session);
-    const myVectorStoreFile = await addFileInVectorStore(bot.vector_store_id, file_path);
+    const myVectorStoreFile = await addFileInVectorStore(
+      bot.vector_store_id,
+      file_path
+    );
     const file_id = myVectorStoreFile?.id;
     if (!file_id) {
       throw createError(400, "File not created in open-ai");
     } else {
-      return file_id;
+      const fileObj = {
+        name: file.originalname,
+        size: file.size,
+        file_id: file_id,
+        company_id: bot.company_id,
+        bot_id: id,
+      };
+      const newFile = await addFile(fileObj, package, session);
+      return newFile;
     }
   } catch (err) {
     throw err;
@@ -291,11 +301,13 @@ const addFileToBot = async (id, file_path, session) => {
 };
 
 // & Function to delete file from bot by ID
-const deleteFileFromBot = async (id, file_id, session) => {
+const deleteFileFromBot = async (bot_id, file_id, session) => {
   try {
-    const bot = await findBotById(id, session);
-    const status = await deleteFileInVectorStore(bot.vector_store_id, file_id);
-    return { message: "File deleted successfully" };
+    const bot = await findBotById(bot_id, session);
+    const file = await getFile(file_id, session);
+    await deleteFileInVectorStore(bot.vector_store_id, file.file_id);
+    const message = await deleteFile(file_id, session);
+    return message;
   } catch (err) {
     throw err;
   }
