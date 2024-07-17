@@ -24,6 +24,10 @@ const threadSchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    vector_store_id: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,  
