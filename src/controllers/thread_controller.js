@@ -1,10 +1,14 @@
 const mongoose = require("mongoose");
+const path = require("path");
+const fs = require("fs");
 const { EventEmitter } = require("events");
 const {
   createAThread,
   getMessageById,
   getThreadById,
   runThreadById,
+  addFileToThread,
+  deleteFileFromThread,
 } = require("../services/thread_services");
 const { createError } = require("../common/error");
 
@@ -121,8 +125,67 @@ const runThreadByID = async (req, res, next) => {
   }
 };
 
+// * Function to upload a file to the thread by ID
+const uploadFileToThread = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    if (!req.file) {
+      return next(createError(400, "File not uploaded"));
+    }
+    const fileLocation = process.env.BULK_FILE_LOCATION;
+    if (!fileLocation) {
+      return next(createError(400, "env for file location is missing"));
+    }
+    const fullPath = path.join(
+      fileLocation,
+      req.file.filename
+    );
+    const thread_id = req?.body?.thread_id;
+    if (!thread_id) {
+      return next(createError(400, "thread_id not provided"));
+    }
+    const package = req?.body?.package;
+    if (!package) {
+      return next(createError(400, "Package not found"));
+    }
+    const file = await addFileToThread(thread_id, fullPath, req.file, package, session);
+    fs.unlinkSync(fullPath);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ message: "File added successfully", file });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+// * Function to delete a file from thread by ID
+const deleteFileFromThreadByID = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const thread_id = req?.body?.thread_id;
+    const file_id = req?.body?.file_id;
+    if (!thread_id || !file_id) {
+      return next(createError(400, "Both thread_id and file_id need to be provided"));
+    }
+    const message = await deleteFileFromThread(thread_id, file_id, session);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json(message);
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
 module.exports = {
   getThreadByID,
   getMessageListByID,
   runThreadByID,
+  uploadFileToThread,
+  deleteFileFromThreadByID,
 }
