@@ -6,7 +6,6 @@ const {
   getMessagesOfThread,
   runThread,
   getThread,
-  createVectorStore,
   addFileInVectorStore,
   deleteFileInVectorStore,
 } = require("../utils/open_ai_utils");
@@ -24,14 +23,14 @@ const createAThread = async (body, session) => {
         threadObj[item] = body[item];
       }
     }
-    const vectorStore = await createVectorStore();
-    if (!vectorStore.id) {
-      throw createError(400, "Can't create vector storage in open AI");
+    const bot = await findBotById(threadObj.bot_id);
+    if (!bot) {
+      throw createError(404, "Bot not found");
     }
-    threadObj.vector_store_id = vectorStore.id;
+    threadObj.vector_store_id = bot.vector_store_id;
     threadObj.tool_resources = {
       file_search: {
-        vector_store_ids: [vectorStore.id],
+        vector_store_ids: [bot.vector_store_id],
       },
     };
     const openAiThread = await createThread();
