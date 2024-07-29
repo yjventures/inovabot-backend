@@ -44,6 +44,22 @@ const companySchema = mongoose.Schema(
       default: null,
       ref: 'Package',
     },
+    last_subscribed: {
+      type: Date,
+      default: null,
+    },
+    expires_at: {
+      type: Date,
+      default: null,
+    },
+    stripe_customer_id:{
+      type: String,
+      default: '',
+    },
+    address: {
+      type: String,
+      default: '',
+    }
   },
   {
     timestamps: true,

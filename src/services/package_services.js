@@ -1,27 +1,78 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Package = require("../models/package");
 const { createError } = require("../common/error");
+const { createProductWithMultiplePrices } = require("../utils/stripe_utils");
 
 // & Function to create a new package
+// const createPackage = async (packageObj, session) => {
+//   try {
+//     //TODO: create a stripe product for this package and put price id in packageObj as stripe_price_id
+//     const product = await createProduct(
+//       packageObj.name,
+//       packageObj.price,
+//       packageObj.currency,
+//       packageObj.duration
+//     );
+//     if (!product) {
+//       throw createError(500, "Failed to create stripe product");
+//     }
+//     packageObj.stripe_price_id = product.id;
+//     const packageCollection = await new Package(packageObj);
+//     const package = await packageCollection.save({ session });
+//     if (package) {
+//       return package;
+//     } else {
+//       throw createError(400, "Package couldn't found");
+//     }
+//   } catch (err) {
+//     throw err;
+//   }
+// };
+
 const createPackage = async (packageObj, session) => {
   try {
-    const packageCollection = await new Package(packageObj);
+    // Ensure that both monthly and yearly prices are provided
+    if (!packageObj.price.monthly.price || !packageObj.price.yearly.price) {
+      throw new Error("Both monthly and yearly unit amounts must be provided");
+    }
+
+    // Create Stripe product and prices
+    const { product, monthlyPrice, yearlyPrice } = await createProductWithMultiplePrices(
+      packageObj.name,
+      parseInt(packageObj.price.monthly.price),
+      parseInt(packageObj.price.yearly.price),
+      packageObj.price.monthly.currency // Assuming currency is the same for both monthly and yearly prices
+    );
+
+    if (!product || !monthlyPrice || !yearlyPrice) {
+      throw createError(500, "Failed to create Stripe product or prices");
+    }
+
+    // Update packageObj with Stripe price IDs
+    packageObj.price.monthly.stripe_id = monthlyPrice.id;
+    packageObj.price.yearly.stripe_id = yearlyPrice.id;
+
+    // Create and save the package
+    const packageCollection = new Package(packageObj);
     const package = await packageCollection.save({ session });
+
     if (package) {
       return package;
     } else {
-      throw createError(400, "Package couldn't found");
+      throw createError(400, "Package couldn't be found");
     }
   } catch (err) {
     throw err;
   }
 };
 
+
 // & Function to get packages using querystring
 const getPackageUsingQureystring = async (req, session) => {
   try {
     const query = {};
-    let page = 1, limit = 10;
+    let page = 1,
+      limit = 10;
     let sortBy = "createdAt";
     for (let item in req?.query) {
       if (item === "page") {
@@ -45,10 +96,10 @@ const getPackageUsingQureystring = async (req, session) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .session(session);
-    const count = await Package.countDocuments(query, {session});
+    const count = await Package.countDocuments(query, { session });
     return { packages, total: count };
   } catch (err) {
-    throw createError(404, "Package not found"); 
+    throw createError(404, "Package not found");
   }
 };
 
@@ -83,7 +134,10 @@ const updatePackageById = async (id, body, session) => {
         query[item] = body[item];
       }
     }
-    const updatePackage = await Package.findByIdAndUpdate(id, query, { new: true, session }).lean();
+    const updatePackage = await Package.findByIdAndUpdate(id, query, {
+      new: true,
+      session,
+    }).lean();
     if (!updatePackage) {
       throw createError(400, "Package not updated");
     } else {
@@ -93,7 +147,6 @@ const updatePackageById = async (id, body, session) => {
     throw err;
   }
 };
-
 
 // & Function to delete a package by ID
 const deletePackageById = async (id, session) => {
@@ -114,5 +167,5 @@ module.exports = {
   getPackageUsingQureystring,
   findPackageById,
   updatePackageById,
-  deletePackageById
+  deletePackageById,
 };

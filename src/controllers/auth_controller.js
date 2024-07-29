@@ -15,13 +15,12 @@ const login = async (req, res, next) => {
     const password = req?.body?.password;
     const type = req?.body?.type;
     const refreshToken = req?.body?.refreshToken;
-    const userType = req?.body?.userType ?? "user";
     if (!type) {
       await session.abortTransaction();
       session.endSession();
       return next(createError(404, "Login type not defined"));
     } else if (type === loginType.EMAIL) {
-      const user = await handleEmailLogin(email, password, userType, session);
+      const user = await handleEmailLogin(email, password, session);
       await session.commitTransaction();
       session.endSession();
       res.status(200).json(user);

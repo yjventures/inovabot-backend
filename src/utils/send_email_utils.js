@@ -1,6 +1,7 @@
 let nodemailer = require('nodemailer');
 require("dotenv").config();
 
+// ^ Function to send email service
 const SendEmailUtils = async (EmailTo, EmailText, EmailSubject, attachments)=>{
     try {
         let transporter = nodemailer.createTransport({
@@ -20,7 +21,6 @@ const SendEmailUtils = async (EmailTo, EmailText, EmailSubject, attachments)=>{
     
     
         let mailOptions = {
-    
             from: `Team ${process.env.NAME} <${process.env.SMTP_EMAIL}>`,
             to: EmailTo,
             subject: EmailSubject,

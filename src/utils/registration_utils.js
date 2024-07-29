@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const { createError } = require("../common/error");
 
+// ^ Function to generate verification link through encription
 const generateVerificationLink = (user) => {
   try {
     let secretKey = process.env.CRYPTO_SECRET;
@@ -8,13 +9,14 @@ const generateVerificationLink = (user) => {
     let encryptedUser = cipher.update(JSON.stringify(user), 'utf-8', 'hex');
     encryptedUser += cipher.final('hex');
     
-    const confirmationLink = `${process.env.REGISTER_REDIRECT_URL}/authenticate/${encodeURIComponent(encryptedUser)}`;
+    const confirmationLink = `${process.env.REGISTER_REDIRECT_URL}${encodeURIComponent(encryptedUser)}`;
     return confirmationLink;
   } catch (err) { 
     throw createError(400, 'Error generate verification link');
   }
 };
 
+// ^ Function to decrypt link
 const decryptLink = (link) => {
   try {
     let secretKey = process.env.CRYPTO_SECRET;
