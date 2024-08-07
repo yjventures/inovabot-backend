@@ -18,7 +18,6 @@ router.get(apiEnum.GET_ALL, process_query, companyController.getAllCompany);
 router.get(
   apiEnum.GET_BY_ID,
   authenticateToken,
-  packageFeature,
   companyController.getCompanyByID
 );
 

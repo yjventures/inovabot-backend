@@ -7,6 +7,11 @@ const companySchema = mongoose.Schema(
       default: null,
       ref: 'User',
     },
+    reseller_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+      ref: 'User',
+    },
     name: {
       type: String,
       default: '',

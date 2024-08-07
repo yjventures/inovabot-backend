@@ -17,7 +17,11 @@ const createCompany = async (companyObj, session) => {
     if (company) {
       const newUser = await updateUserById(
         user?._id,
-        { company_id: company._id, company_position: employeeType.ADMIN },
+        {
+          company_id: company._id,
+          company_position: employeeType.ADMIN,
+          has_company: true,
+        },
         session
       );
       if (!newUser) {
@@ -130,7 +134,7 @@ const deleteCompanyById = async (id, session) => {
     throw err;
   }
 };
-const findCompanyByObject = async (object, session)=>{
+const findCompanyByObject = async (object, session) => {
   try {
     const company = await Company.findOne(object).session(session).lean();
     if (company) {
@@ -141,7 +145,7 @@ const findCompanyByObject = async (object, session)=>{
   } catch (err) {
     throw err;
   }
-}
+};
 module.exports = {
   createCompany,
   getCompanyUsingQureystring,
