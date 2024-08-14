@@ -24,6 +24,9 @@ const apiEnum = {
   TRANSCRIPT: '/transcript',
   TRANSLATE: '/translate',
   TEXT_TO_SPEECH: '/text-to-speech',
+  INVITE_ADMIN: '/invite-admin',
+  INVITE_USER: '/invite-user',
+  INVITE_RESELLER: '/invite-reseller',
 };
 
 module.exports = apiEnum;

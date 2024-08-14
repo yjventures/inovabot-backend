@@ -11,7 +11,6 @@ const upload = setPathForUploader();
 // ? API to transcript an audio
 router.post(
   apiEnum.TRANSCRIPT,
-  authenticateToken,
   upload.single("file"),
   audioController.transcriptAudio
 );
@@ -19,12 +18,11 @@ router.post(
 // ? API to translate an audio
 router.post(
   apiEnum.TRANSLATE,
-  authenticateToken,
   upload.single("file"),
   audioController.translateAudio
 );
 
 // ? API to generate an audio from text
-router.post(apiEnum.TEXT_TO_SPEECH, authenticateToken, audioController.speechFromText);
+router.post(apiEnum.TEXT_TO_SPEECH, audioController.speechFromText);
 
 module.exports = router;

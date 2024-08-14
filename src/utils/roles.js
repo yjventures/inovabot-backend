@@ -1,12 +1,12 @@
-const { serviceName } = require("../utils/enums");
+const { userType, serviceName } = require("../utils/enums");
 const apiEnum = require('../utils/api_constant');
 
 const precidency = {
-  superAdmin: 50,
-  admin: 40,
-  reseller: 30,
-  companyAdmin: 20,
-  user: 10
+  [userType.SUPER_ADMIN]: 50,
+  [userType.ADMIN]: 40,
+  [userType.RESELLER]: 30,
+  [userType.COMPANY_ADMIN]: 20,
+  [userType.USER]: 10
 }
 
 const superAdmin = {
@@ -31,7 +31,9 @@ const superAdmin = {
     [apiEnum.GET_BY_ID]: true,
   },
   [serviceName.INVITATION_SERVICE]: {
-    [apiEnum.CREATE]: true,
+    [apiEnum.INVITE_ADMIN]: true,
+    [apiEnum.INVITE_RESELLER]: true,
+    [apiEnum.INVITE_USER]: true,
     [apiEnum.CHECK_PASSWORD]: true,
   },
   [serviceName.PACKAGE_SERVICE]: {
@@ -89,7 +91,9 @@ const admin = {
     [apiEnum.GET_BY_ID]: true,
   },
   [serviceName.INVITATION_SERVICE]: {
-    [apiEnum.CREATE]: true,
+    [apiEnum.INVITE_ADMIN]: false,
+    [apiEnum.INVITE_RESELLER]: true,
+    [apiEnum.INVITE_USER]: true,
     [apiEnum.CHECK_PASSWORD]: true,
   },
   [serviceName.PACKAGE_SERVICE]: {
@@ -147,15 +151,17 @@ const companyAdmin = {
     [apiEnum.GET_BY_ID]: true,
   },
   [serviceName.INVITATION_SERVICE]: {
-    [apiEnum.CREATE]: true,
+    [apiEnum.INVITE_ADMIN]: false,
+    [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_USER]: true,
     [apiEnum.CHECK_PASSWORD]: true,
   },
   [serviceName.PACKAGE_SERVICE]: {
-    [apiEnum.CREATE]: true,
-    [apiEnum.GET_ALL]: true,
-    [apiEnum.GET_BY_ID]: true,
-    [apiEnum.UPDATE_BY_ID]: true,
-    [apiEnum.DELETE_BY_ID]: true,
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: false,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
   },
   [serviceName.THREAD_SERVICE]: {
     [apiEnum.CREATE]: true,
@@ -205,15 +211,17 @@ const reseller = {
     [apiEnum.GET_BY_ID]: true,
   },
   [serviceName.INVITATION_SERVICE]: {
-    [apiEnum.CREATE]: true,
+    [apiEnum.INVITE_ADMIN]: false,
+    [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_USER]: true,
     [apiEnum.CHECK_PASSWORD]: true,
   },
   [serviceName.PACKAGE_SERVICE]: {
-    [apiEnum.CREATE]: true,
-    [apiEnum.GET_ALL]: true,
-    [apiEnum.GET_BY_ID]: true,
-    [apiEnum.UPDATE_BY_ID]: true,
-    [apiEnum.DELETE_BY_ID]: true,
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: false,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
   },
   [serviceName.THREAD_SERVICE]: {
     [apiEnum.CREATE]: true,
@@ -252,26 +260,28 @@ const user = {
     [apiEnum.DELETE_FILE]: true,
   },
   [serviceName.COMPANY_SERVICE]: {
-    [apiEnum.CREATE]: true,
-    [apiEnum.GET_ALL]: true,
-    [apiEnum.GET_BY_ID]: true,
-    [apiEnum.UPDATE_BY_ID]: true,
-    [apiEnum.DELETE_BY_ID]: true,
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: false,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
   },
   [serviceName.FILE_SERVICE]: {
     [apiEnum.GET_ALL]: true,
     [apiEnum.GET_BY_ID]: true,
   },
   [serviceName.INVITATION_SERVICE]: {
-    [apiEnum.CREATE]: true,
-    [apiEnum.CHECK_PASSWORD]: true,
+    [apiEnum.INVITE_ADMIN]: false,
+    [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_USER]: false,
+    [apiEnum.CHECK_PASSWORD]: false,
   },
   [serviceName.PACKAGE_SERVICE]: {
-    [apiEnum.CREATE]: true,
-    [apiEnum.GET_ALL]: true,
-    [apiEnum.GET_BY_ID]: true,
-    [apiEnum.UPDATE_BY_ID]: true,
-    [apiEnum.DELETE_BY_ID]: true,
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: false,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
   },
   [serviceName.THREAD_SERVICE]: {
     [apiEnum.CREATE]: true,
@@ -283,16 +293,136 @@ const user = {
     [apiEnum.DELETE_FILE]: true,
   },
   [serviceName.SUBSCRIPTION_SERVICE]: {
-    [apiEnum.CREATE]: true,
-    [apiEnum.GET_ALL]: true,
-    [apiEnum.STRIPE_BILLING_PORTAL]: true,
-    [apiEnum.STRIPE_UPDATE_INFO]: true,
-    [apiEnum.STRIPE_SUBSCRIPTION_INFO]: true,
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.STRIPE_BILLING_PORTAL]: false,
+    [apiEnum.STRIPE_UPDATE_INFO]: false,
+    [apiEnum.STRIPE_SUBSCRIPTION_INFO]: false,
   },
   [serviceName.USER_SERVICE]: {
     [apiEnum.REQUEST_SIGNUP]: true,
     [apiEnum.SIGNUP]: true,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: true,
+    [apiEnum.DELETE_BY_ID]: true,
+  },
+};
+
+const editor = {
+  [serviceName.BOT_SERVICE]: {
+    [apiEnum.CREATE]: true,
     [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: true,
+    [apiEnum.DELETE_BY_ID]: true,
+    [apiEnum.UPLOAD]: true,
+    [apiEnum.DELETE_FILE]: true,
+  },
+  [serviceName.COMPANY_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: false,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
+  },
+  [serviceName.FILE_SERVICE]: {
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+  },
+  [serviceName.INVITATION_SERVICE]: {
+    [apiEnum.INVITE_ADMIN]: false,
+    [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_USER]: false,
+    [apiEnum.CHECK_PASSWORD]: false,
+  },
+  [serviceName.PACKAGE_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: false,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
+  },
+  [serviceName.THREAD_SERVICE]: {
+    [apiEnum.CREATE]: true,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: true,
+    [apiEnum.DELETE_BY_ID]: true,
+    [apiEnum.UPLOAD]: true,
+    [apiEnum.DELETE_FILE]: true,
+  },
+  [serviceName.SUBSCRIPTION_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.STRIPE_BILLING_PORTAL]: false,
+    [apiEnum.STRIPE_UPDATE_INFO]: false,
+    [apiEnum.STRIPE_SUBSCRIPTION_INFO]: false,
+  },
+  [serviceName.USER_SERVICE]: {
+    [apiEnum.REQUEST_SIGNUP]: true,
+    [apiEnum.SIGNUP]: true,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: true,
+    [apiEnum.DELETE_BY_ID]: true,
+  },
+};
+
+const viewer = {
+  [serviceName.BOT_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
+    [apiEnum.UPLOAD]: false,
+    [apiEnum.DELETE_FILE]: false,
+  },
+  [serviceName.COMPANY_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: false,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
+  },
+  [serviceName.FILE_SERVICE]: {
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+  },
+  [serviceName.INVITATION_SERVICE]: {
+    [apiEnum.INVITE_ADMIN]: false,
+    [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_USER]: false,
+    [apiEnum.CHECK_PASSWORD]: false,
+  },
+  [serviceName.PACKAGE_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_BY_ID]: false,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
+  },
+  [serviceName.THREAD_SERVICE]: {
+    [apiEnum.CREATE]: true,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: true,
+    [apiEnum.DELETE_BY_ID]: true,
+    [apiEnum.UPLOAD]: true,
+    [apiEnum.DELETE_FILE]: true,
+  },
+  [serviceName.SUBSCRIPTION_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: false,
+    [apiEnum.STRIPE_BILLING_PORTAL]: false,
+    [apiEnum.STRIPE_UPDATE_INFO]: false,
+    [apiEnum.STRIPE_SUBSCRIPTION_INFO]: false,
+  },
+  [serviceName.USER_SERVICE]: {
+    [apiEnum.REQUEST_SIGNUP]: true,
+    [apiEnum.SIGNUP]: true,
+    [apiEnum.GET_ALL]: false,
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
@@ -306,4 +436,6 @@ module.exports = {
   reseller,
   companyAdmin,
   user,
+  editor,
+  viewer,
 }

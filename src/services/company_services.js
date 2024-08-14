@@ -56,6 +56,10 @@ const getCompanyUsingQureystring = async (req, session) => {
         }
       } else if (item === "sortBy") {
         sortBy = req?.query?.sortBy;
+      }
+      else if (item === "search") {
+        const regex = new RegExp(req.query.search, 'i');
+        query.name = { $regex: regex };
       } else {
         query[item] = req?.query[item];
       }
@@ -66,7 +70,15 @@ const getCompanyUsingQureystring = async (req, session) => {
       .limit(limit)
       .session(session);
     const count = await Company.countDocuments(query, { session });
-    return { companies, total: count };
+    return {
+      data: companies,
+      metadata: {
+        totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
+      },
+      message: "Success"
+    };
   } catch (err) {
     throw createError(404, "Company not found");
   }
@@ -134,6 +146,8 @@ const deleteCompanyById = async (id, session) => {
     throw err;
   }
 };
+
+// & Function to find company by object
 const findCompanyByObject = async (object, session) => {
   try {
     const company = await Company.findOne(object).session(session).lean();
@@ -146,6 +160,7 @@ const findCompanyByObject = async (object, session) => {
     throw err;
   }
 };
+
 module.exports = {
   createCompany,
   getCompanyUsingQureystring,

@@ -122,7 +122,9 @@ const saveSubscriptonInfo = async (req, res, next) => {
 };
 
 const billingPortalUrl = async (req, res, next) => {
+  const session = await mongoose.startSession();
   try {
+    session.startTransaction();
     const { stripe_customer_id } = req.body;
     if (!stripe_customer_id) {
       await session.abortTransaction();

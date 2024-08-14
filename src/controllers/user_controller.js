@@ -8,13 +8,15 @@ const {
   updateUserById,
   deleteUserById,
 } = require("../services/user_services");
+const { findCompanyById } = require("../services/company_services");
 const { createError } = require("../common/error");
 const { userType } = require("../utils/enums");
-const { SendEmailUtils } = require("../utils/send_email_utils")
+const { SendEmailUtils } = require("../utils/send_email_utils");
 const {
   generateVerificationLink,
   decryptLink,
 } = require("../utils/registration_utils");
+const { precidency } = require("../utils/roles");
 
 // TODO: Add API to invite an user in a company using company_id
 
@@ -99,14 +101,14 @@ const requestCreate = async (req, res, next) => {
           emailSubject
         );
 
-        const emailSent = emailStatus.accepted.find((item) => {
-          return item === req?.body?.email;
-        });
-        if (!emailSent) {
-          await session.abortTransaction();
-          session.endSession();
-          return next(createError(503, "Email did not send successfully"));
-        }
+        // const emailSent = emailStatus.accepted.find((item) => {
+        //   return item === req?.body?.email;
+        // });
+        // if (!emailSent) {
+        //   await session.abortTransaction();
+        //   session.endSession();
+        //   return next(createError(503, "Email did not send successfully"));
+        // }
         await session.commitTransaction();
         session.endSession();
         res.status(200).json({ message: "Link created successfully", link });
@@ -128,6 +130,17 @@ const getAllUser = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
+    const user_id = req?.user?.id;
+    if (!user_id) {
+      throw createError(404, "User not found");
+    }
+    if (req?.user?.type === userType.RESELLER) {
+      throw createError(400, "Reseller can't get access");
+    }
+    if (req?.user?.type === userType.COMPANY_ADMIN) {
+      const user = await findUserById(user_id);
+      req.query.company_id = user.company_id;
+    }
     const users = await getUsers(req, session);
     if (users) {
       await session.commitTransaction();
@@ -152,6 +165,25 @@ const getUserByID = async (req, res, next) => {
     session.startTransaction();
     const id = req?.params?.id;
     const user = await findUserById(id, session);
+    const company = await findCompanyById(user._id.toString(), session);
+    if (
+      req.user.type === userType.RESELLER &&
+      company.reseller_id.toString() !== req.user.id.toString()
+    ) {
+      throw createError(400, "Not on your authorization");
+    }
+    if (
+      req.user.type === userType.COMPANY_ADMIN &&
+      company.user_id.toString() !== req.user.id.toString()
+    ) {
+      throw createError(400, "Not on your authorization");
+    }
+    if (
+      req.user.type === userType.USER &&
+      user._id.toString() !== req.user.id.toString()
+    ) {
+      throw createError(400, "Not on your authorization");
+    }
     await session.commitTransaction();
     session.endSession();
     res.status(200).json({ user });
@@ -174,6 +206,26 @@ const updateUserByID = async (req, res, next) => {
       return next(createError(400, "Id not provided"));
     }
     if (req?.body) {
+      const oldUser = await findUserById(id, session);
+      const company = await findCompanyById(oldUser._id.toString(), session);
+      if (
+        req.user.type === userType.RESELLER &&
+        company.reseller_id.toString() !== req.user.id.toString()
+      ) {
+        throw createError(400, "Not on your authorization");
+      }
+      if (
+        req.user.type === userType.COMPANY_ADMIN &&
+        company.user_id.toString() !== req.user.id.toString()
+      ) {
+        throw createError(400, "Not on your authorization");
+      }
+      if (
+        req.user.type === userType.USER &&
+        company._id.toString() !== req.user.company_id.toString()
+      ) {
+        throw createError(400, "Not on your authorization");
+      }
       const user = await updateUserById(id, req.body, session);
       await session.commitTransaction();
       session.endSession();
@@ -200,16 +252,27 @@ const deleteUserByID = async (req, res, next) => {
       await session.abortTransaction();
       session.endSession();
       return next(createError(400, "Not provide user id"));
-    } else if (!req?.user?.type || req.user.type !== userType.ADMIN) {
-      await session.abortTransaction();
-      session.endSession();
-      return next(
-        createError(
-          400,
-          "You have to be admin or super admin to delete this account"
-        )
-      );
     } else {
+      const oldUser = await findUserById(id, session);
+      const company = await findCompanyById(oldUser._id.toString(), session);
+      if (
+        req.user.type === userType.RESELLER &&
+        company.reseller_id.toString() !== req.user.id.toString()
+      ) {
+        throw createError(400, "Not on your authorization");
+      }
+      if (
+        req.user.type === userType.COMPANY_ADMIN &&
+        company.user_id.toString() !== req.user.id.toString()
+      ) {
+        throw createError(400, "Not on your authorization");
+      }
+      if (
+        req.user.type === userType.USER &&
+        company._id.toString() !== req.user.company_id.toString()
+      ) {
+        throw createError(400, "Not on your authorization");
+      }
       const message = await deleteUserById(id, session);
       await session.commitTransaction();
       session.endSession();
