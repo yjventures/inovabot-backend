@@ -64,6 +64,10 @@ const companySchema = mongoose.Schema(
     address: {
       type: String,
       default: '',
+    },
+    active: {
+      type: Boolean,
+      default: true,
     }
   },
   {

@@ -50,7 +50,7 @@ const getAllAddress = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const result = await getAddressUsingQureystring(req?.body, session);
+    const result = await getAddressUsingQureystring(req, session);
     if (result) {
       await session.commitTransaction();
       session.endSession();

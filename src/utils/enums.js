@@ -11,6 +11,11 @@ const userType = {
   RESELLER: 'reseller',
 };
 
+const userRoleType = {
+  EDITOR: 'editor',
+  VIEWER: 'viewer',
+};
+
 const otpStatus = {
   UNUSED: 0,
   USED: 1,
@@ -66,6 +71,7 @@ const serviceName = {
 module.exports = {
   loginType,
   userType,
+  userRoleType,
   otpStatus,
   currency,
   stripeInterval,
