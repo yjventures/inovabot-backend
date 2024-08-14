@@ -12,8 +12,12 @@ const {
   addFileToBot,
   deleteFileFromBot,
 } = require("../services/bot_services");
-const { findCompanyByObject  } = require("../services/company_services");
+const {
+  findCompanyByObject,
+  findCompanyById,
+} = require("../services/company_services");
 const { createError } = require("../common/error");
+const { userType } = require("../utils/enums");
 
 // * Function to create a bot/assistant
 const create = async (req, res, next) => {
@@ -27,7 +31,7 @@ const create = async (req, res, next) => {
       return next(createError(400, errors));
     }
     const id = req.user.id;
-    const company = await findCompanyByObject({user_id: id}, session);
+    const company = await findCompanyByObject({ user_id: id }, session);
     const botObj = {
       user_id: id,
       company_id: company._id,
@@ -106,6 +110,26 @@ const updateBotByID = async (req, res, next) => {
       return next(createError(400, "Id not provided"));
     }
     if (req?.body) {
+      const oldBot = await findBotById(id, session);
+      const company = await findCompanyById(oldBot.company_id, session);
+      if (
+        req.user.type === userType.RESELLER &&
+        company.reseller_id.toString() !== req.user.id.toString()
+      ) {
+        throw createError(400, "Not on your authorization");
+      }
+      if (
+        req.user.type === userType.COMPANY_ADMIN &&
+        company.user_id.toString() !== req.user.id.toString()
+      ) {
+        throw createError(400, "Not on your authorization");
+      }
+      if (
+        req.user.type === userType.USER &&
+        company._id.toString() !== req.user.company_id.toString()
+      ) {
+        throw createError(400, "Not on your authorization");
+      }
       const bot = await updateBotById(id, req.body, session);
       if (!bot) {
         await session.abortTransaction();
@@ -139,6 +163,26 @@ const deleteBotByID = async (req, res, next) => {
       session.endSession();
       return next(createError(400, "Id not provided"));
     }
+    const oldBot = await findBotById(id, session);
+    const company = await findCompanyById(oldBot.company_id, session);
+    if (
+      req.user.type === userType.RESELLER &&
+      company.reseller_id.toString() !== req.user.id.toString()
+    ) {
+      throw createError(400, "Not on your authorization");
+    }
+    if (
+      req.user.type === userType.COMPANY_ADMIN &&
+      company.user_id.toString() !== req.user.id.toString()
+    ) {
+      throw createError(400, "Not on your authorization");
+    }
+    if (
+      req.user.type === userType.USER &&
+      company._id.toString() !== req.user.company_id.toString()
+    ) {
+      throw createError(400, "Not on your authorization");
+    }
     const status = await deleteBotById(id, session);
     if (!status) {
       await session.abortTransaction();
@@ -168,10 +212,7 @@ const uploadFileToBot = async (req, res, next) => {
     if (!fileLocation) {
       return next(createError(400, "env for file location is missing"));
     }
-    const fullPath = path.join(
-      fileLocation,
-      req.file.filename
-    );
+    const fullPath = path.join(fileLocation, req.file.filename);
     const bot_id = req?.body?.bot_id;
     if (!bot_id) {
       return next(createError(400, "bot_id not provided"));
@@ -180,7 +221,13 @@ const uploadFileToBot = async (req, res, next) => {
     if (!package) {
       return next(createError(400, "Package not found"));
     }
-    const file = await addFileToBot(bot_id, fullPath, req.file, package, session);
+    const file = await addFileToBot(
+      bot_id,
+      fullPath,
+      req.file,
+      package,
+      session
+    );
     fs.unlinkSync(fullPath);
     await session.commitTransaction();
     session.endSession();
@@ -200,7 +247,9 @@ const deleteFileFromBotByID = async (req, res, next) => {
     const bot_id = req?.body?.bot_id;
     const file_id = req?.body?.file_id;
     if (!bot_id || !file_id) {
-      return next(createError(400, "Both bot_id and file_id need to be provided"));
+      return next(
+        createError(400, "Both bot_id and file_id need to be provided")
+      );
     }
     const message = await deleteFileFromBot(bot_id, file_id, session);
     await session.commitTransaction();

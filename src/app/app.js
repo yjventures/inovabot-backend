@@ -82,6 +82,9 @@ app.use('/invitation', require('../routers/invitation_router'));
 // ~ Router for audio
 app.use('/audios', require('../routers/audio_router'));
 
+// ~ Router for file
+app.use('/files', require('../routers/file_router'));
+
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
   if (res.headersSent) {

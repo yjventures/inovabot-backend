@@ -74,7 +74,7 @@ const requestCreate = async (req, res, next) => {
         phone: req?.body?.phone || "",
         birthdate: req?.body?.birthdate || "",
         address: req?.body?.address || "",
-        type: req?.body?.type || "",
+        type: req?.body?.type || userType.COMPANY_ADMIN,
         password: req?.body?.password || "",
       };
       if (req?.body?.type) {

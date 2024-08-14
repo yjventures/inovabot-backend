@@ -7,7 +7,7 @@ const { createError } = require("../common/error");
 const generateTokens = (user) => {
   try {
     const tokenForAccess = jwt.sign(
-      { email: user.email, id: user._id, type: user.type },
+      { email: user.email, id: user._id, type: user.type, company: user.company_id },
       process.env.JWT_SECRET,
       {
         expiresIn: "10h",
