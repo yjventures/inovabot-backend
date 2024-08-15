@@ -56,9 +56,8 @@ const getCompanyUsingQureystring = async (req, session) => {
         }
       } else if (item === "sortBy") {
         sortBy = req?.query?.sortBy;
-      }
-      else if (item === "search") {
-        const regex = new RegExp(req.query.search, 'i');
+      } else if (item === "search") {
+        const regex = new RegExp(req.query.search, "i");
         query.name = { $regex: regex };
       } else {
         query[item] = req?.query[item];
@@ -77,7 +76,7 @@ const getCompanyUsingQureystring = async (req, session) => {
         currentPage: page,
         totalPage: Math.max(1, Math.ceil(count / limit)),
       },
-      message: "Success"
+      message: "Success",
     };
   } catch (err) {
     throw createError(404, "Company not found");
@@ -136,10 +135,29 @@ const updateCompanyById = async (id, body, session) => {
   }
 };
 
+// & Function to increment value of property in company
+const incrementInCompany = async (id, property, value, session) => {
+  try {
+    const company = await Company.findByIdAndUpdate(
+      id,
+      { $inc: { [property]: value } },
+      {
+        new: true,
+        session,
+      }
+    ).lean();
+    return company;
+  } catch (err) {
+    throw err;
+  }
+};
+
 // & Function to delete a company by ID
 const deleteCompanyById = async (id, session) => {
   try {
-    const deleteCompany = await Company.findByIdAndDelete(id).session(session).lean();
+    const deleteCompany = await Company.findByIdAndDelete(id)
+      .session(session)
+      .lean();
     if (!deleteCompany) {
       throw createError(404, "Company not found");
     } else {
@@ -157,7 +175,7 @@ const findCompanyByObject = async (object, session) => {
     if (company) {
       return company;
     } else {
-      return null
+      return null;
     }
   } catch (err) {
     throw err;
@@ -171,4 +189,5 @@ module.exports = {
   updateCompanyById,
   deleteCompanyById,
   findCompanyByObject,
+  incrementInCompany,
 };

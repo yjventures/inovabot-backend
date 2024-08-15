@@ -100,9 +100,12 @@ const getCompanyByID = async (req, res, next) => {
   try {
     session.startTransaction();
     const user_id = req?.user?.id;
+    if (!user_id) {
+      throw createError(404, "User not found");
+    }
     const id = req?.params?.id;
     const company = await findCompanyById(id, session);
-    if (!user_id) {
+    if (!company) {
       throw createError(404, "User not found");
     }
     if (

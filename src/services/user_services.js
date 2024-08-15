@@ -126,6 +126,7 @@ const deleteUserById = async (id, session) => {
     if (!deleteUser) {
       throw createError(404, "User not found");
     } else {
+      // TODO: Delete Roles of this user
       return { message: "User is deleted" };
     }
   } catch (err) {
