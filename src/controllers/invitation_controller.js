@@ -51,7 +51,7 @@ const sendUserInvitationController = async (req, res, next) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(201).json(createUser); // Send the createUser directly, no need to wrap in an object
+    res.status(200).json(createUser); // Send the createUser directly, no need to wrap in an object
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -78,9 +78,9 @@ const checkTempPasswordController = async (req, res, next) => {
       error.message === "Invalid credentials." ||
       error.message === "Invalid OTP."
     ) {
-      res.status(401).json({ status: "fail", message: error.message });
+      return next(createError(400, error.message));
     } else {
-      res.status(500).json({ status: "fail", message: error.message });
+      return next(createError(500, error.message));
     }
   }
 };

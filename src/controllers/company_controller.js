@@ -107,13 +107,13 @@ const getCompanyByID = async (req, res, next) => {
     }
     if (
       req?.user?.type === userType.RESELLER &&
-      company.reseller_id.toString() !== user_id.toString()
+      company?.reseller_id.toString() !== user_id.toString()
     ) {
       throw createError(400, "Not authorized");
     }
     if (
       req?.user?.type === userType.COMPANY_ADMIN &&
-      company.user_id.toString() !== user_id.toString()
+      company?.user_id.toString() !== user_id.toString()
     ) {
       throw createError(400, "Not authorized");
     }
@@ -145,13 +145,13 @@ const updateCompanyByID = async (req, res, next) => {
     const company = await findCompanyById(id, session);
     if (
       req?.user?.type === userType.RESELLER &&
-      company.reseller_id.toString() !== user_id.toString()
+      company?.reseller_id.toString() !== user_id.toString()
     ) {
       throw createError(400, "Not authorized");
     }
     if (
       req?.user?.type === userType.COMPANY_ADMIN &&
-      company.user_id.toString() !== user_id.toString()
+      company?.user_id.toString() !== user_id.toString()
     ) {
       throw createError(400, "Not authorized");
     }
@@ -190,20 +190,20 @@ const deleteCompanyByID = async (req, res, next) => {
     const company = await findCompanyById(id, session);
     if (
       req?.user?.type === userType.RESELLER &&
-      company.reseller_id.toString() !== user_id.toString()
+      company?.reseller_id.toString() !== user_id.toString()
     ) {
       throw createError(400, "Not authorized");
     }
     if (
       req?.user?.type === userType.COMPANY_ADMIN &&
-      company.user_id.toString() !== user_id.toString()
+      company?.user_id.toString() !== user_id.toString()
     ) {
       throw createError(400, "Not authorized");
     }
     const message = await deleteCompanyById(id, session);
     await session.commitTransaction();
     session.endSession();
-    res.json(200).json(message);
+    res.status(200).json(message);
   } catch (err) {
     await session.abortTransaction();
     session.endSession();

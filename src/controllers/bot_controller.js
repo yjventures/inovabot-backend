@@ -32,6 +32,9 @@ const create = async (req, res, next) => {
     }
     const id = req.user.id;
     const company = await findCompanyByObject({ user_id: id }, session);
+    if (!company) {
+      return next(createError(404, "Company not found"));
+    }
     const botObj = {
       user_id: id,
       company_id: company._id,
@@ -114,19 +117,19 @@ const updateBotByID = async (req, res, next) => {
       const company = await findCompanyById(oldBot.company_id, session);
       if (
         req.user.type === userType.RESELLER &&
-        company.reseller_id.toString() !== req.user.id.toString()
+        company?.reseller_id.toString() !== req.user.id.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
       if (
         req.user.type === userType.COMPANY_ADMIN &&
-        company.user_id.toString() !== req.user.id.toString()
+        company?.user_id.toString() !== req.user.id.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
       if (
         req.user.type === userType.USER &&
-        company._id.toString() !== req.user.company_id.toString()
+        company?._id.toString() !== req.user.company_id.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
@@ -167,19 +170,19 @@ const deleteBotByID = async (req, res, next) => {
     const company = await findCompanyById(oldBot.company_id, session);
     if (
       req.user.type === userType.RESELLER &&
-      company.reseller_id.toString() !== req.user.id.toString()
+      company?.reseller_id.toString() !== req.user.id.toString()
     ) {
       throw createError(400, "Not on your authorization");
     }
     if (
       req.user.type === userType.COMPANY_ADMIN &&
-      company.user_id.toString() !== req.user.id.toString()
+      company?.user_id.toString() !== req.user.id.toString()
     ) {
       throw createError(400, "Not on your authorization");
     }
     if (
       req.user.type === userType.USER &&
-      company._id.toString() !== req.user.company_id.toString()
+      company?._id.toString() !== req.user.company_id.toString()
     ) {
       throw createError(400, "Not on your authorization");
     }

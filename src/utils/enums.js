@@ -68,6 +68,11 @@ const serviceName = {
   USER_SERVICE: 'user-service',
 };
 
+const recurringType = {
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
+};
+
 module.exports = {
   loginType,
   userType,
@@ -77,4 +82,5 @@ module.exports = {
   stripeInterval,
   employeeType,
   serviceName,
+  recurringType,
 };

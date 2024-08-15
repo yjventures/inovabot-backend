@@ -101,14 +101,14 @@ const requestCreate = async (req, res, next) => {
           emailSubject
         );
 
-        // const emailSent = emailStatus.accepted.find((item) => {
-        //   return item === req?.body?.email;
-        // });
-        // if (!emailSent) {
-        //   await session.abortTransaction();
-        //   session.endSession();
-        //   return next(createError(503, "Email did not send successfully"));
-        // }
+        const emailSent = emailStatus.accepted.find((item) => {
+          return item === req?.body?.email;
+        });
+        if (!emailSent) {
+          await session.abortTransaction();
+          session.endSession();
+          return next(createError(503, "Email did not send successfully"));
+        }
         await session.commitTransaction();
         session.endSession();
         res.status(200).json({ message: "Link created successfully", link });
@@ -168,13 +168,13 @@ const getUserByID = async (req, res, next) => {
     const company = await findCompanyById(user._id.toString(), session);
     if (
       req.user.type === userType.RESELLER &&
-      company.reseller_id.toString() !== req.user.id.toString()
+      company?.reseller_id.toString() !== req.user.id.toString()
     ) {
       throw createError(400, "Not on your authorization");
     }
     if (
       req.user.type === userType.COMPANY_ADMIN &&
-      company.user_id.toString() !== req.user.id.toString()
+      company?.user_id.toString() !== req.user.id.toString()
     ) {
       throw createError(400, "Not on your authorization");
     }
@@ -210,20 +210,23 @@ const updateUserByID = async (req, res, next) => {
       const company = await findCompanyById(oldUser._id.toString(), session);
       if (
         req.user.type === userType.RESELLER &&
-        company.reseller_id.toString() !== req.user.id.toString()
+        company?.reseller_id.toString() !== req.user.id.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
       if (
         req.user.type === userType.COMPANY_ADMIN &&
-        company.user_id.toString() !== req.user.id.toString()
+        company?.user_id.toString() !== req.user.id.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
       if (
         req.user.type === userType.USER &&
-        company._id.toString() !== req.user.company_id.toString()
+        company?._id.toString() !== req.user.company_id.toString()
       ) {
+        throw createError(400, "Not on your authorization");
+      }
+      if (precidency[req.user.type] < precidency[oldUser.type]) {
         throw createError(400, "Not on your authorization");
       }
       const user = await updateUserById(id, req.body, session);
@@ -257,20 +260,23 @@ const deleteUserByID = async (req, res, next) => {
       const company = await findCompanyById(oldUser._id.toString(), session);
       if (
         req.user.type === userType.RESELLER &&
-        company.reseller_id.toString() !== req.user.id.toString()
+        company?.reseller_id.toString() !== req.user.id.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
       if (
         req.user.type === userType.COMPANY_ADMIN &&
-        company.user_id.toString() !== req.user.id.toString()
+        company?.user_id.toString() !== req.user.id.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
       if (
         req.user.type === userType.USER &&
-        company._id.toString() !== req.user.company_id.toString()
+        company?._id.toString() !== req.user.company_id.toString()
       ) {
+        throw createError(400, "Not on your authorization");
+      }
+      if (precidency[req.user.type] < precidency[oldUser.type]) {
         throw createError(400, "Not on your authorization");
       }
       const message = await deleteUserById(id, session);
