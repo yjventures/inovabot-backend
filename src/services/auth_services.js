@@ -7,7 +7,12 @@ const { createError } = require("../common/error");
 const generateTokens = (user) => {
   try {
     const tokenForAccess = jwt.sign(
-      { email: user.email, id: user._id, type: user.type },
+      {
+        email: user.email,
+        id: user._id,
+        type: user.type,
+        company: user.company_id,
+      },
       process.env.JWT_SECRET,
       {
         expiresIn: "10h",
@@ -26,9 +31,9 @@ const generateTokens = (user) => {
 };
 
 // & Handle Email Login function
-const handleEmailLogin = async (email, password, userType, session) => {
+const handleEmailLogin = async (email, password, session) => {
   try {
-    const user = await User.findOne({ email, type: userType }).session(session).lean();
+    const user = await User.findOne({ email }).session(session).lean();
     if (user) {
       const isValidPassword = await checkHash(password, user.password);
       if (isValidPassword) {
@@ -47,21 +52,33 @@ const handleEmailLogin = async (email, password, userType, session) => {
 
 // & Handle Refresh Token function
 const handleRefreshTokenLogin = async (refreshToken, session) => {
-  const data = jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, payload) => {
-    if (err) {
-      res.status(401).json({ message: "Unauthorised refresh token" });
-    } else {
-      const { id } = payload;
-      const user = await User.findById(id).session(session).lean();
-      if (!user) {
-        throw createError(401, "Unauthorised user");
-      } else {
-        const userJsonObj = generateTokens(user);
-        return { user: userJsonObj };
+  try {
+    const data = jwt.verify(
+      refreshToken,
+      process.env.JWT_SECRET,
+      async (err, payload) => {
+        try {
+          if (err) {
+            throw createError(401, "Unauthorised refresh token");
+          } else {
+            const { id } = payload;
+            const user = await User.findById(id).session(session).lean();
+            if (!user) {
+              throw createError(401, "Unauthorised user");
+            } else {
+              const userJsonObj = generateTokens(user);
+              return { user: userJsonObj };
+            }
+          }
+        } catch (err) {
+          throw err;
+        }
       }
-    }
-  });
-  return data;
+    );
+    return data;
+  } catch (err) {
+    throw err;
+  }
 };
 
 module.exports = {

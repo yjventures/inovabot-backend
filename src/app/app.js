@@ -6,8 +6,30 @@ require('events').EventEmitter.defaultMaxListeners = 100;
 
 const app = express();
 
+app.use('/webhook', bodyParser.raw({ type: '*/*' }));
+// app.use(bodyParser.raw({ type: '*/*' }))
 app.use(bodyParser.json());
 app.use(cors());
+
+// * Setting streaming for openAI
+app.use((req, res, next) => {
+  res.sseSetup = () => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+  };
+
+  res.sseSend = (data) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  res.sseStop = () => {
+    res.end();
+  }
+
+  next();
+});
 
 // * Logger middleware
 app.use((req, res, next) => {
@@ -25,6 +47,7 @@ app.get("/", (req, res, next) => {
     next(createError());
   }
 });
+
 
 // ~ Router for authentication routes
 app.use('/auth', require('../routers/auth_router'));
@@ -44,8 +67,30 @@ app.use('/addresses', require('../routers/address_router'));
 // ~ Router for packages
 app.use('/packages', require('../routers/package_router'));
 
+// ~ Router for subscription
+app.use('/subscription', require('../routers/subscription_router'));
+
+// ~ Router for bot
+app.use('/bots', require('../routers/bot_router'));
+
+// ~ Router for thread
+app.use('/threads', require('../routers/thread_router'));
+
+// ~ Router for subscription
+app.use('/invitation', require('../routers/invitation_router'));
+
+// ~ Router for audio
+app.use('/audios', require('../routers/audio_router'));
+
+// ~ Router for file
+app.use('/files', require('../routers/file_router'));
+
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+  
   const errMessage = err.message || "Something went wrong";
   const errStatus = err.status || 500;
   return res.status(errStatus).json({
