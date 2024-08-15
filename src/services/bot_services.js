@@ -11,7 +11,7 @@ const {
   deleteFileInVectorStore,
 } = require("../utils/open_ai_utils");
 const { addFile, getFile, deleteFile } = require("../services/file_services");
-const { updateCompanyById } = require("../services/company_services");
+const { incrementInCompany } = require("../services/company_services");
 
 // & Function to create bot instructions
 const createBotInstructions = (req) => {
@@ -132,8 +132,11 @@ const createBot = async (botObj, session) => {
     }
     const botCollection = await new Bot(botObj);
     const bot = await botCollection.save({ session });
-    const company = await updateCompanyById(bot.company_id, {$inc : { bots: 1 }}, session);
     if (bot) {
+      const company = await incrementInCompany(bot.company_id, 'bots', 1, session);
+      if (!company) {
+        throw createError(400, "Company couldn't response");  
+      }
       return bot;
     } else {
       throw createError(400, "Bot couldn't create");
