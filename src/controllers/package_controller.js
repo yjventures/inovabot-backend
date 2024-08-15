@@ -162,7 +162,7 @@ const deletePackageByID = async (req, res, next) => {
       const message = await deletePackageById(id, session);
       await session.commitTransaction();
       session.endSession();
-      res.json(200).json(message);
+      res.status(200).json(message);
     }
   } catch (err) {
     await session.abortTransaction();

@@ -24,6 +24,14 @@ const companySchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    logo_dark: {
+      type: String,
+      default: '',
+    },
+    email: {
+      type: String,
+      default: '',
+    },
     industry: {
       type: String,
       default: '',
@@ -43,6 +51,10 @@ const companySchema = mongoose.Schema(
     recurring_date: {
       type: Date,
       default: new Date(),
+    },
+    recurring_type: {
+      type: String,
+      default: 'monthly',
     },
     package: {
       type: mongoose.Schema.Types.ObjectId,
@@ -68,7 +80,11 @@ const companySchema = mongoose.Schema(
     active: {
       type: Boolean,
       default: true,
-    }
+    },
+    bots: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

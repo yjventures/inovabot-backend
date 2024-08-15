@@ -182,7 +182,6 @@ const handleWebhook = async (req, res, next) => {
     await session.abortTransaction();
     session.endSession();
     console.log(`⚠️  Webhook signature verification failed: ${err.message}`);
-    // return res.status(400).send(`Webhook Error: ${err.message}`);
     return next(createError(503, `Webhook Error: ${err.message}`));
   }
 };

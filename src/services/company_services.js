@@ -94,7 +94,7 @@ const findCompanyById = async (id, session) => {
     if (company) {
       return company;
     } else {
-      throw createError(404, "Company not found");
+      return null;
     }
   } catch (err) {
     throw err;
@@ -105,6 +105,9 @@ const findCompanyById = async (id, session) => {
 const updateCompanyById = async (id, body, session) => {
   try {
     const query = await findCompanyById(id, session);
+    if (!query) {
+      throw createError(404, "Company not found");
+    }
     for (let item in body) {
       if (
         item === "recurring_date" ||
@@ -136,7 +139,7 @@ const updateCompanyById = async (id, body, session) => {
 // & Function to delete a company by ID
 const deleteCompanyById = async (id, session) => {
   try {
-    const deleteCompany = await Company.findByIdAndDelete(id).session(session);
+    const deleteCompany = await Company.findByIdAndDelete(id).session(session).lean();
     if (!deleteCompany) {
       throw createError(404, "Company not found");
     } else {
@@ -154,7 +157,7 @@ const findCompanyByObject = async (object, session) => {
     if (company) {
       return company;
     } else {
-      throw createError(404, "Company not found");
+      return null
     }
   } catch (err) {
     throw err;

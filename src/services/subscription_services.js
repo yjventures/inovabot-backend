@@ -35,6 +35,9 @@ const createStripeSubscriptionService = async (
 ) => {
   try {
     const company = await findCompanyByObject({ user_id }, session);
+    if (!company) {
+      return next(createError(404, "Company not found"));
+    }
     const stripe_customer_id = company?.stripe_customer_id;
 
     if (!stripe_customer_id) {
