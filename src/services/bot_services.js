@@ -176,7 +176,15 @@ const getBotUsingQureystring = async (req, session) => {
       .limit(limit)
       .session(session);
     const count = await Bot.countDocuments(query, { session });
-    return { bots, total: count };
+    return {
+      data: bots,
+      metadata: {
+        totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
+      },
+      message: "Success",
+    };
   } catch (err) {
     throw createError(404, "Bot not found");
   }
