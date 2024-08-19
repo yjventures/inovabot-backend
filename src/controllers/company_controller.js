@@ -122,7 +122,7 @@ const getCompanyByID = async (req, res, next) => {
     }
     await session.commitTransaction();
     session.endSession();
-    res.status(200).json({ company });
+    res.status(200).json({ data: company });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
