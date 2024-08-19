@@ -62,7 +62,15 @@ const getFiles = async (req, session) => {
       .limit(limit)
       .session(session);
     const count = await File.countDocuments(query, {session});
-    return { files, total: count };
+    return {
+      data: files,
+      metadata: {
+        totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
+      },
+      message: "Success",
+    };
   } catch (err) {
     throw err;
   }

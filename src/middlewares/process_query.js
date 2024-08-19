@@ -16,7 +16,6 @@ const process_query = (req, res, next) => {
             req.query.sortBy = `-${req.query.sortBy}`;
           }
           delete req.query.sortOrder;
-          console.log(req.query.sortOrder);
         }
        }
     }
