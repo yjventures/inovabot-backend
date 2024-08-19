@@ -25,7 +25,7 @@ const sendAdminInvitationController = async (req, res, next) => {
 };
 
 const sendResellerInvitationController = async (req, res, next) => {
-  const session = await mongoose.startSession();
+  const session = await mongoose.startSession(); 
   try {
     session.startTransaction();
     req.body.type = userType.RESELLER;

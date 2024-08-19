@@ -27,6 +27,7 @@ const apiEnum = {
   INVITE_ADMIN: '/invite-admin',
   INVITE_USER: '/invite-user',
   INVITE_RESELLER: '/invite-reseller',
+  ANALYTICS_TOTAL_DATA: '/total-data'
 };
 
 module.exports = apiEnum;
