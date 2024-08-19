@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const {
   createRole,
+  deleteRoleUsingObject,
 } = require("./role_services");
 const { userType } = require("../utils/enums");
 const roles = require("../utils/roles");
@@ -134,7 +135,7 @@ const deleteUserById = async (id, session) => {
     if (!deleteUser) {
       throw createError(404, "User not found");
     } else {
-      // TODO: Delete Roles of this user
+      const role = await deleteRoleUsingObject(id);
       return { message: "User is deleted" };
     }
   } catch (err) {

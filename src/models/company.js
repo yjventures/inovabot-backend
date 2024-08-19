@@ -85,6 +85,11 @@ const companySchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+    active_subscription: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+      ref: 'Package',
+    },
   },
   {
     timestamps: true,

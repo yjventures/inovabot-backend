@@ -124,6 +124,7 @@ const addFileToThread = async (id, file_path, file, package, session) => {
         size: file.size,
         file_id: file_id,
         company_id: bot.company_id,
+        bot_id: bot._id,
         thread_id: id,
       };
       const newFile = await addFile(fileObj, package, session);
