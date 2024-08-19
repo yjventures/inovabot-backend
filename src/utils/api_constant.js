@@ -21,6 +21,7 @@ const apiEnum = {
   GET_MESSAGE_LIST_BY_ID: '/messages/:id',
   UPLOAD: '/upload',
   DELETE_FILE: '/delete-file',
+  ANALYTICS_TOTAL_DATA: '/total-data'
 };
 
 module.exports = apiEnum;

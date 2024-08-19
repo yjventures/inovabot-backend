@@ -79,6 +79,8 @@ app.use('/threads', require('../routers/thread_router'));
 // ~ Router for subscription
 app.use('/invitation', require('../routers/invitation_router'));
 
+// ~ Router for analytics
+app.use('/analytics', require('../routers/analytics_router'));
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
   if (res.headersSent) {
