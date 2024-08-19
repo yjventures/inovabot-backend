@@ -97,7 +97,15 @@ const getPackageUsingQureystring = async (req, session) => {
       .limit(limit)
       .session(session);
     const count = await Package.countDocuments(query, { session });
-    return { packages, total: count };
+    return {
+      data: packages,
+      metadata: {
+        totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
+      },
+      message: "Success",
+    };
   } catch (err) {
     throw createError(404, "Package not found");
   }

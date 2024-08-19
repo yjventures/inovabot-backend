@@ -1,4 +1,9 @@
 const User = require("../models/user");
+const {
+  createRole,
+} = require("./role_services");
+const { userType } = require("../utils/enums");
+const roles = require("../utils/roles");
 const { createError } = require("../common/error");
 const { hashPassword } = require("../common/manage_pass");
 
@@ -34,6 +39,15 @@ const createUser = async (userBody, password, session) => {
     const userCollection = await new User(userBody);
     const user = await userCollection.save({session});
     if (user) {
+      const roleBody = {
+        name: userType.COMPANY_ADMIN,
+        user_id: user._id,
+        permission: roles.companyAdmin,
+      }
+      const role = await createRole(roleBody, session);
+      if (!role) {
+        throw createError(400, "Role not assigned");
+      }
       return user;
     } else {
       throw createError(400, "User not created");
@@ -72,7 +86,15 @@ const getUsers = async (req, session) => {
       .limit(limit)
       .session(session);
     const count = await User.countDocuments(query, {session});
-    return { users, total: count };
+    return {
+      data: users,
+      metadata: {
+        totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
+      },
+      message: "Success",
+    };
   } catch (err) {
     throw createError(404, "User not found");
   }
@@ -81,6 +103,7 @@ const getUsers = async (req, session) => {
 // & Function to update a user by ID
 const updateUserById = async (id, body, session) => {
   try {
+    
     const query = await findUserById(id, session);
     for (let item in body) {
       if (item == "birthdate" || item === "last_subscribed" || item === "expires_at") {
@@ -111,6 +134,7 @@ const deleteUserById = async (id, session) => {
     if (!deleteUser) {
       throw createError(404, "User not found");
     } else {
+      // TODO: Delete Roles of this user
       return { message: "User is deleted" };
     }
   } catch (err) {

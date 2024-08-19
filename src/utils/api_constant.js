@@ -21,6 +21,12 @@ const apiEnum = {
   GET_MESSAGE_LIST_BY_ID: '/messages/:id',
   UPLOAD: '/upload',
   DELETE_FILE: '/delete-file',
+  TRANSCRIPT: '/transcript',
+  TRANSLATE: '/translate',
+  TEXT_TO_SPEECH: '/text-to-speech',
+  INVITE_ADMIN: '/invite-admin',
+  INVITE_USER: '/invite-user',
+  INVITE_RESELLER: '/invite-reseller',
   ANALYTICS_TOTAL_DATA: '/total-data'
 };
 

@@ -4,10 +4,16 @@ const loginType = {
 };
 
 const userType = {
-  COMPANY_ADMIN: 'company_admin',
+  SUPER_ADMIN: 'super-admin',
+  COMPANY_ADMIN: 'company-admin',
   ADMIN: 'admin',
   USER: 'user',
-  REGULAR: 'regular',
+  RESELLER: 'reseller',
+};
+
+const userRoleType = {
+  EDITOR: 'editor',
+  VIEWER: 'viewer',
 };
 
 const otpStatus = {
@@ -47,11 +53,34 @@ const employeeType = {
   SUPERVISOR:'supervisor',
 };
 
+const serviceName = {
+  AUDIO_SERVICE: 'audio-service',
+  AUTH_SERVICE: 'auth-service',
+  BOT_SERVICE: 'bot-service',
+  COMPANY_SERVICE: 'company-service',
+  FILE_SERVICE: 'file-service',
+  INVITATION_SERVICE: 'invitation-service',
+  OTP_SERVICE: 'otp-service',
+  PACKAGE_SERVICE: 'package-service',
+  PASSWORD_SERVICE: 'password-service',
+  SUBSCRIPTION_SERVICE: 'subscription-service',
+  THREAD_SERVICE: 'thread-service',
+  USER_SERVICE: 'user-service',
+};
+
+const recurringType = {
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
+};
+
 module.exports = {
   loginType,
   userType,
+  userRoleType,
   otpStatus,
   currency,
   stripeInterval,
   employeeType,
+  serviceName,
+  recurringType,
 };

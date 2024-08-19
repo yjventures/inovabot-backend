@@ -7,6 +7,11 @@ const companySchema = mongoose.Schema(
       default: null,
       ref: 'User',
     },
+    reseller_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+      ref: 'User',
+    },
     name: {
       type: String,
       default: '',
@@ -16,6 +21,14 @@ const companySchema = mongoose.Schema(
       default: '',
     },
     logo: {
+      type: String,
+      default: '',
+    },
+    logo_dark: {
+      type: String,
+      default: '',
+    },
+    email: {
       type: String,
       default: '',
     },
@@ -39,6 +52,10 @@ const companySchema = mongoose.Schema(
       type: Date,
       default: new Date(),
     },
+    recurring_type: {
+      type: String,
+      default: 'monthly',
+    },
     package: {
       type: mongoose.Schema.Types.ObjectId,
       default: null,
@@ -59,7 +76,15 @@ const companySchema = mongoose.Schema(
     address: {
       type: String,
       default: '',
-    }
+    },
+    active: {
+      type: Boolean,
+      default: true,
+    },
+    bots: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

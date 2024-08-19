@@ -122,7 +122,9 @@ const saveSubscriptonInfo = async (req, res, next) => {
 };
 
 const billingPortalUrl = async (req, res, next) => {
+  const session = await mongoose.startSession();
   try {
+    session.startTransaction();
     const { stripe_customer_id } = req.body;
     if (!stripe_customer_id) {
       await session.abortTransaction();
@@ -180,7 +182,6 @@ const handleWebhook = async (req, res, next) => {
     await session.abortTransaction();
     session.endSession();
     console.log(`⚠️  Webhook signature verification failed: ${err.message}`);
-    // return res.status(400).send(`Webhook Error: ${err.message}`);
     return next(createError(503, `Webhook Error: ${err.message}`));
   }
 };

@@ -6,8 +6,11 @@ const {
   getMessagesOfThread,
   runThread,
   getThread,
+  addFileInVectorStore,
+  deleteFileInVectorStore,
 } = require("../utils/open_ai_utils");
 const { findBotById } = require("../services/bot_services");
+const { addFile, getFile, deleteFile } = require("../services/file_services");
 
 // & Function to create a new thread
 const createAThread = async (body, session) => {
@@ -20,6 +23,16 @@ const createAThread = async (body, session) => {
         threadObj[item] = body[item];
       }
     }
+    const bot = await findBotById(threadObj.bot_id);
+    if (!bot) {
+      throw createError(404, "Bot not found");
+    }
+    threadObj.vector_store_id = bot.vector_store_id;
+    threadObj.tool_resources = {
+      file_search: {
+        vector_store_ids: [bot.vector_store_id],
+      },
+    };
     const openAiThread = await createThread();
     if (openAiThread.id) {
       threadObj.thread_id = openAiThread.id;
@@ -93,9 +106,54 @@ const runThreadById = async (id, message, eventEmitter, instructions, session) =
   }
 };
 
+// & Upload file in thread by ID
+const addFileToThread = async (id, file_path, file, package, session) => {
+  try {
+    const thread = await getThreadById(id, session);
+    const bot = await findBotById(thread.bot_id, session);
+    const myVectorStoreFile = await addFileInVectorStore(
+      thread.vector_store_id,
+      file_path
+    );
+    const file_id = myVectorStoreFile?.id;
+    if (!file_id) {
+      throw createError(400, "File not created in open-ai");
+    } else {
+      const fileObj = {
+        name: file.originalname,
+        size: file.size,
+        file_id: file_id,
+        company_id: bot.company_id,
+        thread_id: id,
+      };
+      const newFile = await addFile(fileObj, package, session);
+      return newFile;
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// & Function to delete file from thread by ID
+const deleteFileFromThread = async (thread_id, file_id, session) => {
+  try {
+    const thread = await getThreadById(thread_id, session);
+    const file = await getFile(file_id, session);
+    await deleteFileInVectorStore(thread.vector_store_id, file.file_id);
+    const message = await deleteFile(file_id, session);
+    return message;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createAThread,
   getMessageById,
   getThreadById,
   runThreadById,
+  addFileToThread,
+  deleteFileFromThread,
 };
+
+// vs_EKBu7DPE3az7pdOn2wlvIdBv

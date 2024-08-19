@@ -6,6 +6,8 @@ const { process_query } = require("../middlewares/process_query");
 const { authenticateToken } = require("../middlewares/token_authenticator");
 const { packageFeature } = require("../middlewares/package_feature");
 const { setPathForUploader } = require("../middlewares/file_uploader");
+const { serviceName } = require("../utils/enums");
+const { isPermitted } = require("../middlewares/role_based_permission");
 
 const upload = setPathForUploader();
 const router = express.Router();
@@ -20,11 +22,18 @@ router.post(
     body("company_id", "Company ID is required"),
   ],
   authenticateToken,
+  isPermitted(serviceName.BOT_SERVICE, apiEnum.CREATE),
   botController.create
 );
 
 // ? API to get bots using querystring
-router.get(apiEnum.GET_ALL, process_query, botController.getAll);
+router.get(
+  apiEnum.GET_ALL,
+  process_query,
+  authenticateToken,
+  isPermitted(serviceName.BOT_SERVICE, apiEnum.GET_ALL),
+  botController.getAll
+);
 
 // ? API to get a bot using ID
 router.get(apiEnum.GET_BY_ID, botController.getBotByID);
@@ -33,6 +42,7 @@ router.get(apiEnum.GET_BY_ID, botController.getBotByID);
 router.put(
   apiEnum.UPDATE_BY_ID,
   authenticateToken,
+  isPermitted(serviceName.BOT_SERVICE, apiEnum.UPDATE_BY_ID),
   botController.updateBotByID
 );
 
@@ -40,6 +50,7 @@ router.put(
 router.delete(
   apiEnum.DELETE_BY_ID,
   authenticateToken,
+  isPermitted(serviceName.BOT_SERVICE, apiEnum.DELETE_BY_ID),
   botController.deleteBotByID
 );
 
@@ -48,11 +59,17 @@ router.post(
   apiEnum.UPLOAD,
   authenticateToken,
   upload.single("file"),
+  isPermitted(serviceName.BOT_SERVICE, apiEnum.UPLOAD),
   packageFeature,
   botController.uploadFileToBot
 );
 
 // ? API to delete a file from a bot
-router.post(apiEnum.DELETE_FILE, botController.deleteFileFromBotByID);
+router.post(
+  apiEnum.DELETE_FILE,
+  authenticateToken,
+  isPermitted(serviceName.BOT_SERVICE, apiEnum.DELETE_FILE),
+  botController.deleteFileFromBotByID
+);
 
 module.exports = router;

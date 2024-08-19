@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { userType } = require("../utils/enums");
 
 const userSchema = mongoose.Schema(
   {
@@ -15,11 +16,11 @@ const userSchema = mongoose.Schema(
     },
     phone: {
       type: String,
-      default: '',
+      default: "",
     },
     image: {
       type: String,
-      default: '',
+      default: "",
     },
     birthdate: {
       type: Date,
@@ -27,7 +28,13 @@ const userSchema = mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["admin", "user", "super-admin", "company-admin"],
+      enum: [
+        userType.SUPER_ADMIN,
+        userType.ADMIN,
+        userType.COMPANY_ADMIN,
+        userType.RESELLER,
+        userType.USER,
+      ],
       default: "user",
     },
     last_subscribed: {
@@ -41,7 +48,7 @@ const userSchema = mongoose.Schema(
     company_id: {
       type: mongoose.Schema.Types.ObjectId,
       default: null,
-      ref: 'Company'
+      ref: "Company",
     },
     company_position: {
       type: String,
@@ -50,7 +57,7 @@ const userSchema = mongoose.Schema(
     has_company: {
       type: Boolean,
       default: false,
-    }
+    },
   },
   {
     timestamps: true,

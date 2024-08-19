@@ -234,6 +234,50 @@ const deleteFileInVectorStore = async (vector_store_id, file_id) => {
   }
 };
 
+// ^ Function to transcript an audio file
+const transcriptAudio = async (file_path) => {
+  try {
+    // Max file size 25 mb
+    const transcription = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(file_path),
+      model: "whisper-1",
+    });
+    return transcription;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to translate an audio file
+const translateAudio = async (file_path) => {
+  try {
+    // Max file size 25 mb
+    const translation = await openai.audio.translations.create({
+      file: fs.createReadStream(file_path),
+      model: "whisper-1",
+    });
+    return translation;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Funtion to create an audio file from text
+const createAudioFromText = async (message, speechFile) => {
+  try {
+    const audio = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy",
+      input: message,
+    });
+    const buffer = Buffer.from(await audio.arrayBuffer());
+    await fs.promises.writeFile(speechFile, buffer);
+    return audio;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createAssistant,
   listOfAssistants,
@@ -247,6 +291,9 @@ module.exports = {
   createVectorStore,
   addFileInVectorStore,
   deleteFileInVectorStore,
+  transcriptAudio,
+  translateAudio,
+  createAudioFromText,
 };
 
 // * Here is a template for the tools

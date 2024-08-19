@@ -21,6 +21,16 @@ const create = async (req, res, next) => {
       session.endSession();
       return next(createError(400, errors));
     } else {
+      if (!req?.user?.type) {
+        await session.abortTransaction();
+        session.endSession();
+        return next(createError(400, "Not logged in"));
+      }
+      if (req?.user?.type !== userType.SUPER_ADMIN && req.user.type !== userType.ADMIN) {
+        await session.abortTransaction();
+        session.endSession();
+        return next(createError(400, "You have to be an admin to update package"));
+      }
       const packageObj = {};
       for (let item in req?.body) {
         packageObj[item] = req.body[item];
@@ -50,7 +60,7 @@ const getAllPackage = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const result = await getPackageUsingQureystring(req?.body, session);
+    const result = await getPackageUsingQureystring(req, session);
     if (result) {
       await session.commitTransaction();
       session.endSession();
@@ -89,11 +99,21 @@ const updatePackageByID = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
+    if (!req?.user?.type) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "Not logged in"));
+    }
+    if (!req?.user?.type !== userType.SUPER_ADMIN && req.user.type !== userType.ADMIN) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "You have to be an admin to update package"));
+    }
     const id = req?.params?.id;
     if (!id) {
       await session.abortTransaction();
       session.endSession();
-      return next(createError(400, "Id not provided"))
+      return next(createError(400, "Id not provided"));
     }
     if (req?.body) {
       const package = await updatePackageById(id, req.body, session);
@@ -117,6 +137,16 @@ const deletePackageByID = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
+    if (!req?.user?.type) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "Not logged in"));
+    }
+    if (!req?.user?.type !== userType.SUPER_ADMIN && req.user.type !== userType.ADMIN) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "You have to be an admin to delete package"));
+    }
     const id = req?.params?.id;
     if (!id) {
       await session.abortTransaction();
@@ -132,7 +162,7 @@ const deletePackageByID = async (req, res, next) => {
       const message = await deletePackageById(id, session);
       await session.commitTransaction();
       session.endSession();
-      res.json(200).json(message);
+      res.status(200).json(message);
     }
   } catch (err) {
     await session.abortTransaction();

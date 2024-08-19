@@ -4,9 +4,18 @@ const { generateLinkForTeamMember } = require("../utils/invitation");
 const { SendEmailUtils } = require("../utils/send_email_utils");
 const generator = require("generate-password");
 const { createError } = require("../common/error");
+const roles = require("../utils/roles");
+const {
+  createRole,
+} = require("./role_services");
+const { userType, userRoleType } = require("../utils/enums");
 
 const createUserService = async (req, session) => {
   const reqBody = req.body;
+
+  if (!reqBody.email) {
+    throw createError(400, "Email must be provided");
+  }
 
   try {
     const user = await User.findOne({ email: reqBody.email }).session(session);
@@ -31,6 +40,7 @@ const createUserService = async (req, session) => {
       last_subscribed: reqBody.last_subscribed || null,
       expires_at: reqBody.expires_at || null,
       company_id: reqBody.company_id || null,
+      company_position: reqBody.company_position || null,
     };
 
     // Create the new user within the transaction session
@@ -49,7 +59,27 @@ const createUserService = async (req, session) => {
     // console.log("user Count", userCount)
     
     if (createUser) {
-      // console.log("user count")
+      let permission = {};
+      if (reqBody.type === userType.ADMIN) {
+        permission = roles.admin;
+      } else if (reqBody.type === userType.RESELLER) {
+        permission = roles.reseller;
+      } else if (reqBody.type === userType.USER) {
+        if (reqBody?.role === userRoleType.EDITOR) {
+          permission = roles.editor;
+        } else {
+          permission = roles.viewer;
+        }
+      }
+      const roleBody = {
+        name: reqBody.type,
+        user_id: createUser._id,
+        permission,
+      }
+      const role = await createRole(roleBody, session);
+      if (!role) {
+        throw createError(400, "Role not assigned");
+      }
 
       // Insert OTP into the database
       const tempPass = {
@@ -64,14 +94,14 @@ const createUserService = async (req, session) => {
       // Send a confirmation email to the user
       const emailMessage = `Your temporary password is ${passwordCode}.<br/> Click here to confirm your invitation: ${confirmationToken}`;
       const emailSubject = "Account Confirmation";
-      const emailSend = await SendEmailUtils(
-        reqBody.email,
-        emailMessage,
-        emailSubject
-      );
+      const emailSend = false; //await SendEmailUtils(
+      //   reqBody.email,
+      //   emailMessage,
+      //   emailSubject
+      // );
 
       createUser.password = undefined; // Remove password from the response
-      return { user: createUser, emailInfo: emailSend };
+      return { user: createUser, code: confirmationToken, pass: passwordCode, emailInfo: emailSend };
     } else {
       throw createError(500, "User creation failed");
     }

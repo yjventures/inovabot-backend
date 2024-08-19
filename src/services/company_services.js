@@ -17,7 +17,11 @@ const createCompany = async (companyObj, session) => {
     if (company) {
       const newUser = await updateUserById(
         user?._id,
-        { company_id: company._id, company_position: employeeType.ADMIN },
+        {
+          company_id: company._id,
+          company_position: employeeType.ADMIN,
+          has_company: true,
+        },
         session
       );
       if (!newUser) {
@@ -52,6 +56,9 @@ const getCompanyUsingQureystring = async (req, session) => {
         }
       } else if (item === "sortBy") {
         sortBy = req?.query?.sortBy;
+      } else if (item === "search") {
+        const regex = new RegExp(req.query.search, "i");
+        query.name = { $regex: regex };
       } else {
         query[item] = req?.query[item];
       }
@@ -62,7 +69,15 @@ const getCompanyUsingQureystring = async (req, session) => {
       .limit(limit)
       .session(session);
     const count = await Company.countDocuments(query, { session });
-    return { companies, total: count };
+    return {
+      data: companies,
+      metadata: {
+        totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
+      },
+      message: "Success",
+    };
   } catch (err) {
     throw createError(404, "Company not found");
   }
@@ -78,7 +93,7 @@ const findCompanyById = async (id, session) => {
     if (company) {
       return company;
     } else {
-      throw createError(404, "Company not found");
+      return null;
     }
   } catch (err) {
     throw err;
@@ -89,6 +104,9 @@ const findCompanyById = async (id, session) => {
 const updateCompanyById = async (id, body, session) => {
   try {
     const query = await findCompanyById(id, session);
+    if (!query) {
+      throw createError(404, "Company not found");
+    }
     for (let item in body) {
       if (
         item === "recurring_date" ||
@@ -117,10 +135,29 @@ const updateCompanyById = async (id, body, session) => {
   }
 };
 
+// & Function to increment value of property in company
+const incrementInCompany = async (id, property, value, session) => {
+  try {
+    const company = await Company.findByIdAndUpdate(
+      id,
+      { $inc: { [property]: value } },
+      {
+        new: true,
+        session,
+      }
+    ).lean();
+    return company;
+  } catch (err) {
+    throw err;
+  }
+};
+
 // & Function to delete a company by ID
 const deleteCompanyById = async (id, session) => {
   try {
-    const deleteCompany = await Company.findByIdAndDelete(id).session(session);
+    const deleteCompany = await Company.findByIdAndDelete(id)
+      .session(session)
+      .lean();
     if (!deleteCompany) {
       throw createError(404, "Company not found");
     } else {
@@ -130,18 +167,21 @@ const deleteCompanyById = async (id, session) => {
     throw err;
   }
 };
-const findCompanyByObject = async (object, session)=>{
+
+// & Function to find company by object
+const findCompanyByObject = async (object, session) => {
   try {
     const company = await Company.findOne(object).session(session).lean();
     if (company) {
       return company;
     } else {
-      throw createError(404, "Company not found");
+      return null;
     }
   } catch (err) {
     throw err;
   }
-}
+};
+
 module.exports = {
   createCompany,
   getCompanyUsingQureystring,
@@ -149,4 +189,5 @@ module.exports = {
   updateCompanyById,
   deleteCompanyById,
   findCompanyByObject,
+  incrementInCompany,
 };

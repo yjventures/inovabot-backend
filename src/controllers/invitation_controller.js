@@ -5,28 +5,14 @@ const {
 } = require("../services/invitation_services");
 const mongoose = require("mongoose");
 const { createError } = require("../common/error");
-
-const sendUserInvitationController = async (req, res, next) => {
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
-    const createUser = await createUserService(req, session); // Await the function call
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(201).json(createUser); // Send the createUser directly, no need to wrap in an object
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    next(err);
-  }
-};
+const { userType } = require("../utils/enums");
 
 const sendAdminInvitationController = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const createUser = await createAdminService(req, session); // Await the function call
+    req.body.type = userType.ADMIN;
+    const createUser = await createUserService(req, session); // Await the function call
     await session.commitTransaction();
     session.endSession();
 
@@ -42,11 +28,30 @@ const sendResellerInvitationController = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const createUser = await createResellerService(req, session); // Await the function call
+    req.body.type = userType.RESELLER;
+    const createUser = await createUserService(req, session); // Await the function call
     await session.commitTransaction();
     session.endSession();
 
     res.status(201).json(createUser); // Send the createUser directly, no need to wrap in an object
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+const sendUserInvitationController = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    req.body.type = userType.USER;
+    req.body.company_position = userType.USER;
+    const createUser = await createUserService(req, session); // Await the function call
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json(createUser); // Send the createUser directly, no need to wrap in an object
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -73,10 +78,15 @@ const checkTempPasswordController = async (req, res, next) => {
       error.message === "Invalid credentials." ||
       error.message === "Invalid OTP."
     ) {
-      res.status(401).json({ status: "fail", message: error.message });
+      return next(createError(400, error.message));
     } else {
-      res.status(500).json({ status: "fail", message: error.message });
+      return next(createError(500, error.message));
     }
   }
 };
-module.exports = { sendUserInvitationController, checkTempPasswordController, sendAdminInvitationController, sendResellerInvitationController };
+module.exports = {
+  sendAdminInvitationController,
+  sendResellerInvitationController,
+  sendUserInvitationController,
+  checkTempPasswordController,
+};

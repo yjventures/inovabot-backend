@@ -31,6 +31,51 @@ const addFile = async (fileObj, package, session) => {
   }
 };
 
+// & Function to get files using querystring
+const getFiles = async (req, session) => {
+  try {
+    const query = {};
+    let page = 1, limit = 10;
+    let sortBy = "createdAt";
+    for (let item in req?.query) {
+      if (item === "page") {
+        page = Number(req?.query?.page);
+        if (isNaN(page)) {
+          page = 1;
+        }
+      } else if (item === "limit") {
+        limit = Number(req?.query?.limit);
+        if (isNaN(limit)) {
+          limit = 10;
+        }
+      } else if (item === "sortBy") {
+        sortBy = req?.query?.sortBy;
+      } else if (item === "company_id" || item === "bot_id" || item === "thread_id") {
+        query[item] = new mongoose.Types.ObjectId(req?.query[item]);;
+      } else {
+        query[item] = req?.query[item];
+      }
+    }
+    const files = await File.find(query)
+      .sort(sortBy)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .session(session);
+    const count = await File.countDocuments(query, {session});
+    return {
+      data: files,
+      metadata: {
+        totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
+      },
+      message: "Success",
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
 // & Function to get a file
 const getFile = async (id, session) => {
   try {
@@ -59,6 +104,7 @@ const deleteFile = async (id, session) => {
 
 module.exports = {
   addFile,
+  getFiles,
   getFile,
   deleteFile,
 }

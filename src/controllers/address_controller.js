@@ -50,7 +50,7 @@ const getAllAddress = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const result = await getAddressUsingQureystring(req?.body, session);
+    const result = await getAddressUsingQureystring(req, session);
     if (result) {
       await session.commitTransaction();
       session.endSession();
@@ -132,7 +132,7 @@ const deleteAddressByID = async (req, res, next) => {
       const message = await deleteAddressById(id, session);
       await session.commitTransaction();
       session.endSession();
-      res.json(200).json(message);
+      res.status(200).json(message);
     }
   } catch (err) {
     await session.abortTransaction();

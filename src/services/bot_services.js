@@ -11,6 +11,7 @@ const {
   deleteFileInVectorStore,
 } = require("../utils/open_ai_utils");
 const { addFile, getFile, deleteFile } = require("../services/file_services");
+const { incrementInCompany } = require("../services/company_services");
 
 // & Function to create bot instructions
 const createBotInstructions = (req) => {
@@ -132,6 +133,10 @@ const createBot = async (botObj, session) => {
     const botCollection = await new Bot(botObj);
     const bot = await botCollection.save({ session });
     if (bot) {
+      const company = await incrementInCompany(bot.company_id, 'bots', 1, session);
+      if (!company) {
+        throw createError(400, "Company couldn't response");  
+      }
       return bot;
     } else {
       throw createError(400, "Bot couldn't create");
@@ -171,7 +176,15 @@ const getBotUsingQureystring = async (req, session) => {
       .limit(limit)
       .session(session);
     const count = await Bot.countDocuments(query, { session });
-    return { bots, total: count };
+    return {
+      data: bots,
+      metadata: {
+        totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
+      },
+      message: "Success",
+    };
   } catch (err) {
     throw createError(404, "Bot not found");
   }
