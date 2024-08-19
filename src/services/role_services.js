@@ -28,7 +28,21 @@ const createRole = async (body, session) => {
   }
 };
 
+// & Function to delete a role by user id
+const deleteRoleUsingObject = async (user_id, session) => {
+  try {
+    const role = await Role.findByIdAndDelete({ user_id }).sesion(session).lean();
+    if (!role) {
+      throw createError(404, 'Role not found');
+    }
+    return role;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   findRoleByUserId,
   createRole,
+  deleteRoleUsingObject,
 };

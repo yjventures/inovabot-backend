@@ -144,6 +144,10 @@ const botSchema = mongoose.Schema(
     user_avatar: {
       type: String,
       default: "",
+    },
+    category: {
+      type: String,
+      default: "",
     }
   },
   {
