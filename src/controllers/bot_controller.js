@@ -93,7 +93,7 @@ const getBotByID = async (req, res, next) => {
     const bot = await findBotById(id, session);
     await session.commitTransaction();
     session.endSession();
-    res.status(200).json({ bot });
+    res.status(200).json({ data: bot });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
