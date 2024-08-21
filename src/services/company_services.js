@@ -109,14 +109,19 @@ const updateCompanyById = async (id, body, session) => {
     }
     for (let item in body) {
       if (
-        item === "recurring_date" ||
-        item === "last_subscribed" ||
-        item === "expires_at"
+        (item === "recurring_date" ||
+          item === "last_subscribed" ||
+          item === "expires_at") &&
+        body[item]
       ) {
         const date = new Date(body[item]);
         query[item] = date;
       } else if (item === "user_id" || item === "package") {
-        query[item] = new mongoose.Types.ObjectId(body[item]);
+        if (mongoose.Types.ObjectId.isValid(body[item])) { // Validate ObjectId
+          query[item] = new mongoose.Types.ObjectId(body[item]);
+        } else {
+          throw createError(400, `${item} is not a valid ObjectId`);
+        }
       } else {
         query[item] = body[item];
       }
