@@ -93,7 +93,10 @@ const getCompanyListWithoutQuery = async (req, session) => {
     const companies = await Company.find(query).session(session);
     const count = await Company.countDocuments(query, { session });
     return {
-      data: companies,
+      data: companies.map(company => ({
+        _id: company._id,
+        name: company.name,
+      })),
       metadata: {
         totalDocuments: count,
       },
