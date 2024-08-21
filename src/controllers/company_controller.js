@@ -6,6 +6,7 @@ const {
   findCompanyById,
   updateCompanyById,
   deleteCompanyById,
+  getCompanyListWithoutQuery,
 } = require("../services/company_services");
 const { userType } = require("../utils/enums");
 const { createError } = require("../common/error");
@@ -83,6 +84,38 @@ const getAllCompany = async (req, res, next) => {
       req.query.user_id = user_id;
     }
     const result = await getCompanyUsingQureystring(req, session);
+    if (result) {
+      await session.commitTransaction();
+      session.endSession();
+      res.status(200).json(result);
+    } else {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(404, "Company not found"));
+    }
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+// * Function to get all companies without querystring
+const getCompanyList = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const user_id = req?.user?.id;
+    if (!user_id) {
+      throw createError(404, "User not found");
+    }
+    if (req?.user?.type === userType.RESELLER) {
+      req.query.reseller_id = user_id;
+    }
+    if (req?.user?.type === userType.COMPANY_ADMIN) {
+      req.query.user_id = user_id;
+    }
+    const result = await getCompanyListWithoutQuery(req, session);
     if (result) {
       await session.commitTransaction();
       session.endSession();
@@ -225,4 +258,5 @@ module.exports = {
   getCompanyByID,
   updateCompanyByID,
   deleteCompanyByID,
+  getCompanyList,
 };

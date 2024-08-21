@@ -27,6 +27,15 @@ router.get(
   companyController.getAllCompany
 );
 
+// ? API to get all companies without query string
+router.get(
+  apiEnum.GET_LIST,
+  process_query,
+  authenticateToken,
+  isPermitted(serviceName.COMPANY_SERVICE, apiEnum.GET_LIST),
+  companyController.getCompanyList
+);
+
 // ? API to get company by ID
 router.get(
   apiEnum.GET_BY_ID,
