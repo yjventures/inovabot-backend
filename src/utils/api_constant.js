@@ -15,7 +15,6 @@ const apiEnum = {
   STRIPE_BILLING_PORTAL: '/subscription-billing-portal',
   STRIPE_UPDATE_INFO: '/update-subscription-info',
   WEBHOOK: '/webhook',
-  UPLOAD: "/upload",
   GET_THREAD: '/get-thread',
   RUN_THREAD_BY_ID: '/run/:id',
   GET_MESSAGE_LIST_BY_ID: '/messages/:id',
@@ -27,7 +26,8 @@ const apiEnum = {
   INVITE_ADMIN: '/invite-admin',
   INVITE_USER: '/invite-user',
   INVITE_RESELLER: '/invite-reseller',
-  ANALYTICS_TOTAL_DATA: '/total-data'
+  ANALYTICS_TOTAL_DATA: '/total-data',
+  INVITE_COMPANY_ADMIN: '/invite-company-admin',
 };
 
 module.exports = apiEnum;

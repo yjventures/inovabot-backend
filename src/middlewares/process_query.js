@@ -11,6 +11,11 @@ const process_query = (req, res, next) => {
         } else if (req.query[item] === 'null') {
           req.query[item] = null;
         }
+        if (item === 'search') {
+          if (!req.query[item]) {
+            delete req.query[item];
+          }
+        }
         if (item === 'sortOrder') {
           if (req.query.sortOrder === 'desc' && req.query.sortBy) {
             req.query.sortBy = `-${req.query.sortBy}`;
