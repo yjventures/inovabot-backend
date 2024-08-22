@@ -4,26 +4,26 @@ const { createError } = require("../common/error");
 
 const createCategory = async (title) => {
   try {
-    const existingCategory = await category.findOne({ category_title: title });
+    const existingCategory = await category.findOne({ title: title });
     if (existingCategory) {
       throw createError(401, "This Category already exists");
     }
 
     const newCategory = await category.create({
-      category_title: title,
+      title: title,
     });
 
     return {
-      newCategory,
+      data: newCategory,
     };
   } catch (error) {
     throw error;
   }
 };
 
-const updateCategory = async (id, updateData) => {
+const updateCategory = async (id, title) => {
   try {
-    const updatedCategory = await category.findByIdAndUpdate(id, updateData, {
+    const updatedCategory = await category.findByIdAndUpdate(id, {title: title}, {
       new: true,
     });
     if (!updatedCategory) {
@@ -31,7 +31,7 @@ const updateCategory = async (id, updateData) => {
     }
 
     return {
-      updatedCategory,
+      data:updatedCategory,
       message: "The category has been updated successfully",
     };
   } catch (error) {
@@ -48,9 +48,8 @@ const deleteCategory = async (id) => {
   }
 };
 
-const getAllCategories = async (lang) => {
+const getAllCategories = async () => {
   try {
-    category.setDefaultLanguage(lang);
     const categories = await category.find();
     return { categories };
   } catch (error) {
@@ -59,13 +58,14 @@ const getAllCategories = async (lang) => {
 };
 
 const getSingleCategory = async (id) => {
+  // console.log("id", id);
   try {
-    const category = await category.findById(id).lean().exec();
-    if (!category) {
-      return [];
+    const categoryData = await category.findById(id);
+    // console.log(categoryData);
+    if (!categoryData) {
+      throw createError(404, "Category not found");
     }
-
-    return { category };
+    return { data: categoryData };
   } catch (error) {
     throw error;
   }

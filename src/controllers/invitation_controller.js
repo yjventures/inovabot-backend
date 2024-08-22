@@ -84,6 +84,8 @@ const checkTempPasswordController = async (req, res, next) => {
     }
   }
 };
+
+
 module.exports = {
   sendAdminInvitationController,
   sendResellerInvitationController,

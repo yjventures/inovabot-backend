@@ -88,6 +88,8 @@ app.use('/files', require('../routers/file_router'));
 // ~ Router for analytics
 app.use('/analytics', require('../routers/analytics_router'));
 
+app.use('/categories', require('../routers/category_router'));
+
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
   if (res.headersSent) {
