@@ -34,6 +34,7 @@ const superAdmin = {
     [apiEnum.INVITE_ADMIN]: true,
     [apiEnum.INVITE_RESELLER]: true,
     [apiEnum.INVITE_USER]: true,
+    [apiEnum.INVITE_COMPANY_ADMIN]: true,
     [apiEnum.CHECK_PASSWORD]: true,
   },
   [serviceName.PACKAGE_SERVICE]: {
@@ -101,6 +102,7 @@ const admin = {
     [apiEnum.INVITE_ADMIN]: false,
     [apiEnum.INVITE_RESELLER]: true,
     [apiEnum.INVITE_USER]: true,
+    [apiEnum.INVITE_COMPANY_ADMIN]: true,
     [apiEnum.CHECK_PASSWORD]: true,
   },
   [serviceName.PACKAGE_SERVICE]: {
@@ -167,6 +169,7 @@ const companyAdmin = {
   [serviceName.INVITATION_SERVICE]: {
     [apiEnum.INVITE_ADMIN]: false,
     [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_COMPANY_ADMIN]: false,
     [apiEnum.INVITE_USER]: true,
     [apiEnum.CHECK_PASSWORD]: true,
   },
@@ -234,6 +237,7 @@ const reseller = {
   [serviceName.INVITATION_SERVICE]: {
     [apiEnum.INVITE_ADMIN]: false,
     [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_COMPANY_ADMIN]: true,
     [apiEnum.INVITE_USER]: true,
     [apiEnum.CHECK_PASSWORD]: true,
   },
@@ -301,6 +305,7 @@ const user = {
   [serviceName.INVITATION_SERVICE]: {
     [apiEnum.INVITE_ADMIN]: false,
     [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_COMPANY_ADMIN]: false,
     [apiEnum.INVITE_USER]: false,
     [apiEnum.CHECK_PASSWORD]: false,
   },
@@ -368,6 +373,7 @@ const editor = {
   [serviceName.INVITATION_SERVICE]: {
     [apiEnum.INVITE_ADMIN]: false,
     [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_COMPANY_ADMIN]: false,
     [apiEnum.INVITE_USER]: false,
     [apiEnum.CHECK_PASSWORD]: false,
   },
@@ -435,6 +441,7 @@ const viewer = {
   [serviceName.INVITATION_SERVICE]: {
     [apiEnum.INVITE_ADMIN]: false,
     [apiEnum.INVITE_RESELLER]: false,
+    [apiEnum.INVITE_COMPANY_ADMIN]: false,
     [apiEnum.INVITE_USER]: false,
     [apiEnum.CHECK_PASSWORD]: false,
   },

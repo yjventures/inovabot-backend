@@ -33,7 +33,15 @@ router.post(
   invitationController.sendUserInvitationController
 );
 
-// ? API to request for check temp password
+// ? API to request for send company admin invitation
+router.post(
+  apiEnum.INVITE_COMPANY_ADMIN,
+  authenticateToken,
+  isPermitted(serviceName.INVITATION_SERVICE, apiEnum.INVITE_COMPANY_ADMIN),
+  invitationController.sendCompanyAdminInvitationController
+);
+
+// ? API to check temp password of a user
 router.post(
   apiEnum.CHECK_PASSWORD,
   invitationController.checkTempPasswordController

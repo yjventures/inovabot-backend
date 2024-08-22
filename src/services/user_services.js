@@ -104,12 +104,13 @@ const getUsers = async (req, session) => {
 // & Function to update a user by ID
 const updateUserById = async (id, body, session) => {
   try {
-    
     const query = await findUserById(id, session);
     for (let item in body) {
       if (item == "birthdate" || item === "last_subscribed" || item === "expires_at") {
-        const bday = body?.birthdate;
-        query.birthdate = new Date(bday);
+        if (body[item]) {
+          const bday = body?.birthdate;
+          query.birthdate = new Date(bday);
+        }
       } else {
         query[item] = body[item];
       }
@@ -121,7 +122,7 @@ const updateUserById = async (id, body, session) => {
     if (!updateUser) {
       throw createError(400, "User not updated");
     } else {
-      return { user: updateUser };
+      return { user: updateUser, message: "success" };
     }
   } catch (err) {
     throw err;

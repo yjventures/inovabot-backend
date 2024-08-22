@@ -26,10 +26,15 @@ const create = async (req, res, next) => {
         throw createError(404, "User not found");
       }
       if (req?.user?.type === userType.RESELLER) {
-        req.query.reseller_id = user_id;
+        req.body.reseller_id = user_id;
+        req.body.user_id = user_id;
       }
-      if (req?.user?.type === userType.COMPANY_ADMIN) {
-        req.query.user_id = user_id;
+      if (
+        req?.user?.type === userType.SUPER_ADMIN ||
+        req?.user?.type === userType.ADMIN ||
+        req?.user?.type === userType.COMPANY_ADMIN
+      ) {
+        req.body.user_id = user_id;
       }
       if (req?.user?.type === userType.SUPER_ADMIN) {
         
@@ -91,7 +96,7 @@ const getAllCompany = async (req, res, next) => {
     } else {
       await session.abortTransaction();
       session.endSession();
-      return next(createError(404, "Gives the error"));
+      return next(createError(404, "Company not found"));
     }
   } catch (err) {
     await session.abortTransaction();
