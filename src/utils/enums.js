@@ -66,6 +66,7 @@ const serviceName = {
   SUBSCRIPTION_SERVICE: 'subscription-service',
   THREAD_SERVICE: 'thread-service',
   USER_SERVICE: 'user-service',
+  CATEGORY_SERVICE: 'category-service'
 };
 
 const recurringType = {

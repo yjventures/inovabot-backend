@@ -25,7 +25,8 @@ const createCompany = async (companyObj, session) => {
         session
       );
       if (!newUser) {
-        throw createError(500, "Error while updating user");
+        // throw createError(500, "Error while updating user");
+        //add here the new user creation
       }
       return company;
     } else {

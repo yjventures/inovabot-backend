@@ -7,8 +7,9 @@ const {
   updateCategory,
 } = require("../services/category_service");
 
-const createCategory = async (req, res) => {
+const create = async (req, res, next) => {
   const { title } = req.body;
+  console.log(title)
   try {
     const result = await createCategory(title);
     return res.status(200).json(result);
@@ -17,19 +18,19 @@ const createCategory = async (req, res) => {
   }
 };
 
-const updateCategory = async (req, res) => {
+const update = async (req, res, next) => {
   const categoryId = req.params.id;
-  const reqBody = req.body;
+  const title = req.body.title;
 
   try {
-    const result = await updateCategory(categoryId, reqBody);
+    const result = await updateCategory(categoryId, title);
     return res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 };
 
-const deleteCategory = async (req, res) => {
+const deleteCategoryController = async (req, res, next) => {
   const categoryId = req.params.id;
   try {
     const result = await deleteCategory(categoryId);
@@ -39,18 +40,18 @@ const deleteCategory = async (req, res) => {
   }
 };
 
-const getAllCategories = async (req, res) => {
+const getAllCategoriesController = async (req, res, next) => {
   try {
-    const lang = req.headers["accept-language"];
-    const result = await getAllCategories(lang);
+    const result = await getAllCategories();
     return res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 };
 
-const getSingleCategory = async (req, res) => {
+const getSingleCategoryController = async (req, res, next) => {
   const id = req.params.id;
+  // console.log(id)
   try {
     const result = await getSingleCategory(id);
     return res.status(200).json(result);
@@ -60,9 +61,9 @@ const getSingleCategory = async (req, res) => {
 };
 
 module.exports = {
-  createCategory,
-  updateCategory,
-  deleteCategory,
-  getAllCategories,
-  getSingleCategory,
+  create,
+  update,
+  deleteCategoryController,
+  getAllCategoriesController,
+  getSingleCategoryController,
 };
