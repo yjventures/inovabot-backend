@@ -22,6 +22,11 @@ const process_query = (req, res, next) => {
           }
           delete req.query.sortOrder;
         }
+        if (item === 'category') {
+          if (req.query.category === 'All') {
+            delete req.query.category;
+          }
+        }
        }
     }
     next();
