@@ -104,7 +104,7 @@ const updatePackageByID = async (req, res, next) => {
       session.endSession();
       return next(createError(400, "Not logged in"));
     }
-    if (!req?.user?.type !== userType.SUPER_ADMIN && req.user.type !== userType.ADMIN) {
+    if (req?.user?.type !== userType.SUPER_ADMIN && req.user.type !== userType.ADMIN) {
       await session.abortTransaction();
       session.endSession();
       return next(createError(400, "You have to be an admin to update package"));
@@ -142,7 +142,7 @@ const deletePackageByID = async (req, res, next) => {
       session.endSession();
       return next(createError(400, "Not logged in"));
     }
-    if (!req?.user?.type !== userType.SUPER_ADMIN && req.user.type !== userType.ADMIN) {
+    if (req?.user?.type !== userType.SUPER_ADMIN && req.user.type !== userType.ADMIN) {
       await session.abortTransaction();
       session.endSession();
       return next(createError(400, "You have to be an admin to delete package"));
