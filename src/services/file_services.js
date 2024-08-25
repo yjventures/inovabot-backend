@@ -52,6 +52,9 @@ const getFiles = async (req, session) => {
         sortBy = req?.query?.sortBy;
       } else if (item === "company_id" || item === "bot_id" || item === "thread_id") {
         query[item] = new mongoose.Types.ObjectId(req?.query[item]);;
+      } else if (item === "search") {
+        const regex = new RegExp(req.query.search, "i");
+        query.name = { $regex: regex };
       } else {
         query[item] = req?.query[item];
       }

@@ -168,6 +168,9 @@ const getBotUsingQureystring = async (req, session) => {
         }
       } else if (item === "sortBy") {
         sortBy = req?.query?.sortBy;
+      } else if (item === "search") {
+        const regex = new RegExp(req.query.search, "i");
+        query.name = { $regex: regex };
       } else {
         query[item] = req?.query[item];
       }

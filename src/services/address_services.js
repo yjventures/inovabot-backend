@@ -34,6 +34,9 @@ const getAddressUsingQureystring = async (req, session) => {
         if (isNaN(limit)) {
           limit = 10;
         }
+      } else if (item === "search") {
+        const regex = new RegExp(req.query.search, "i");
+        query.name = { $regex: regex };
       } else if (item === "sortBy") {
         sortBy = req?.query?.sortBy;
       } else {
