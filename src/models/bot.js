@@ -62,7 +62,7 @@ const botSchema = mongoose.Schema(
     },
     model: {
       type: String,
-      default: '',
+      default: 'gpt-4-turbo',
     },
     temperature: {
       type: Number,
@@ -148,7 +148,11 @@ const botSchema = mongoose.Schema(
     category: {
       type: String,
       default: "",
-    }
+    },
+    web_url: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
