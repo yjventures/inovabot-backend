@@ -195,6 +195,18 @@ const createVectorStore = async (name) => {
   }
 };
 
+// ^ Function to delete a vector store
+const deleteVectorStore = async (id) => {
+  try {
+    const deletedVectorStore = await openai.beta.vectorStores.del(
+      id
+    );
+    return deletedVectorStore;
+  } catch (err) {
+    throw err;
+  }
+};
+
 // ^ Function to add files in vector store
 const addFileInVectorStore = async (vector_store_id, file_path) => {
   try {
@@ -289,6 +301,7 @@ module.exports = {
   runThread,
   getThread,
   createVectorStore,
+  deleteVectorStore,
   addFileInVectorStore,
   deleteFileInVectorStore,
   transcriptAudio,

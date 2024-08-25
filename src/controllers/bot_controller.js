@@ -31,17 +31,37 @@ const create = async (req, res, next) => {
       return next(createError(400, errors));
     }
     const id = req.user.id;
-    const company = await findCompanyByObject({ user_id: id }, session);
+    let company = null;
+    if (req?.body?.company_id) {
+      company = await findCompanyById(req.body.company_id, session);
+    } else {
+      company = await findCompanyByObject({ user_id: id }, session);
+    }
     if (!company) {
       return next(createError(404, "Company not found"));
     }
+    if (
+      req?.user?.type === userType.RESELLER &&
+      company?.reseller_id.toString() !== user_id.toString()
+    ) {
+      return next(createError(404, "Permission denied"));
+    }
+    if (
+      req?.user?.type === userType.COMPANY_ADMIN &&
+      company?.user_id.toString() !== user_id.toString()
+    ) {
+      return next(createError(404, "Permission denied"));
+    }
     const botObj = {
       user_id: id,
-      company_id: company._id,
+      company_id: company?._id,
+      model: "gpt-4-turbo",
     };
     for (let item in req?.body) {
       if (item === "company_id" || item === "user_id") {
         botObj[item] = new mongoose.Types.ObjectId(req.body[item]);
+      } else if (item === "model") {
+        botObj[item] = req?.body?.model || "gpt-4-turbo";
       } else {
         botObj[item] = req.body[item];
       }

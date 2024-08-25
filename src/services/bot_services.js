@@ -7,6 +7,7 @@ const {
   updateAssistantById,
   deleteAssistantById,
   createVectorStore,
+  deleteVectorStore,
   addFileInVectorStore,
   deleteFileInVectorStore,
 } = require("../utils/open_ai_utils");
@@ -271,6 +272,7 @@ const updateBotById = async (id, body, session) => {
 const deleteBotById = async (id, session) => {
   try {
     const bot = await findBotById(id, session);
+    const isVectorStoreDeleted = await deleteVectorStore(bot.vector_store_id);
     const isDeleted = await deleteAssistantById(bot.assistant_id);
     if (!isDeleted) {
       throw createError(400, "Bot not deleted in open-ai");
