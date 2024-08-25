@@ -144,6 +144,11 @@ const updateCompanyById = async (id, body, session) => {
       } else if (item === "user_id" || item === "package") {
         if (mongoose.Types.ObjectId.isValid(body[item])) { // Validate ObjectId
           query[item] = new mongoose.Types.ObjectId(body[item]);
+        } else {
+          if (item === "user_id") {
+            throw createError(400, "User id not correct");
+          }
+          query[item] = null;
         }
       } else {
         query[item] = body[item];

@@ -17,7 +17,6 @@ router.post(
   apiEnum.CREATE,
   [
     body("name", "Name is required"),
-    body("model", "Name is required"),
     body("user_id", "User ID is required"),
     body("company_id", "Company ID is required"),
   ],
