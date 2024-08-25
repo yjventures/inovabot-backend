@@ -152,12 +152,6 @@ const deletePackageByID = async (req, res, next) => {
       await session.abortTransaction();
       session.endSession();
       return next(createError(400, "Not provide id"));
-    } else if (
-      req.user.type !== userType.ADMIN
-    ) {
-      await session.abortTransaction();
-      session.endSession();
-      return next(createError(400, "You have to be admin or super admin to delete"));
     } else {
       const message = await deletePackageById(id, session);
       await session.commitTransaction();
