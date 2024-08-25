@@ -84,6 +84,30 @@ const getCompanyUsingQureystring = async (req, session) => {
   }
 };
 
+// & Function to get company without query string
+const getCompanyListWithoutQuery = async (req, session) => {
+  try {
+    const query = {};
+    for (let item in req?.query) {
+      query[item] = req?.query[item];
+    }
+    const companies = await Company.find(query).session(session);
+    const count = await Company.countDocuments(query, { session });
+    return {
+      data: companies.map(company => ({
+        _id: company._id,
+        name: company.name,
+      })),
+      metadata: {
+        totalDocuments: count,
+      },
+      message: "Success",
+    };
+  } catch (err) {
+    throw createError(404, "Company not found");
+  }
+};
+
 // & Function to find a company by ID
 const findCompanyById = async (id, session) => {
   try {
@@ -120,8 +144,6 @@ const updateCompanyById = async (id, body, session) => {
       } else if (item === "user_id" || item === "package") {
         if (mongoose.Types.ObjectId.isValid(body[item])) { // Validate ObjectId
           query[item] = new mongoose.Types.ObjectId(body[item]);
-        } else {
-          throw createError(400, `${item} is not a valid ObjectId`);
         }
       } else {
         query[item] = body[item];
@@ -196,4 +218,5 @@ module.exports = {
   deleteCompanyById,
   findCompanyByObject,
   incrementInCompany,
+  getCompanyListWithoutQuery,
 };

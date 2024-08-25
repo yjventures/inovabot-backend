@@ -4,6 +4,7 @@ const apiEnum = {
   REQUEST_SIGNUP: '/request-signup',
   CREATE: '/create',
   GET_ALL: '/get-all',
+  GET_LIST: '/get-list',
   GET_BY_ID: '/get/:id',
   UPDATE_BY_ID: '/update/:id',
   DELETE_BY_ID: '/delete/:id',

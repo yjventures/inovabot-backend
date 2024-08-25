@@ -22,6 +22,7 @@ const superAdmin = {
   [serviceName.COMPANY_SERVICE]: {
     [apiEnum.CREATE]: true,
     [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_LIST]: true,
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
@@ -90,6 +91,7 @@ const admin = {
   [serviceName.COMPANY_SERVICE]: {
     [apiEnum.CREATE]: true,
     [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_LIST]: true,
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
@@ -158,6 +160,7 @@ const companyAdmin = {
   [serviceName.COMPANY_SERVICE]: {
     [apiEnum.CREATE]: true,
     [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_LIST]: false,
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
@@ -226,6 +229,7 @@ const reseller = {
   [serviceName.COMPANY_SERVICE]: {
     [apiEnum.CREATE]: true,
     [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_LIST]: true,
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
@@ -294,6 +298,7 @@ const user = {
   [serviceName.COMPANY_SERVICE]: {
     [apiEnum.CREATE]: false,
     [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_LIST]: false,
     [apiEnum.GET_BY_ID]: false,
     [apiEnum.UPDATE_BY_ID]: false,
     [apiEnum.DELETE_BY_ID]: false,
@@ -362,6 +367,7 @@ const editor = {
   [serviceName.COMPANY_SERVICE]: {
     [apiEnum.CREATE]: false,
     [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_LIST]: false,
     [apiEnum.GET_BY_ID]: false,
     [apiEnum.UPDATE_BY_ID]: false,
     [apiEnum.DELETE_BY_ID]: false,
@@ -430,6 +436,7 @@ const viewer = {
   [serviceName.COMPANY_SERVICE]: {
     [apiEnum.CREATE]: false,
     [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_LIST]: false,
     [apiEnum.GET_BY_ID]: false,
     [apiEnum.UPDATE_BY_ID]: false,
     [apiEnum.DELETE_BY_ID]: false,
