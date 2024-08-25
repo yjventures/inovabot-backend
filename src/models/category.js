@@ -2,9 +2,10 @@ const mongoose = require("mongoose")
 
 const categorySchema = mongoose.Schema(
   {
-    category_title: {
+    title: {
       type: String,
-      intl: true,
+      default: '',
+      
     },
   },
   {

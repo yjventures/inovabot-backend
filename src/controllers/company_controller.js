@@ -37,6 +37,12 @@ const create = async (req, res, next) => {
       ) {
         req.body.user_id = user_id;
       }
+      if (req?.user?.type === userType.SUPER_ADMIN) {
+        
+      }
+      if (req?.user?.type === userType.ADMIN) {
+        
+      }
       const companyObj = {};
       for (let item in req?.body) {
         if (

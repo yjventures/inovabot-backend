@@ -1,13 +1,13 @@
 const { userType, serviceName } = require("../utils/enums");
-const apiEnum = require('../utils/api_constant');
+const apiEnum = require("../utils/api_constant");
 
 const precidency = {
   [userType.SUPER_ADMIN]: 50,
   [userType.ADMIN]: 40,
   [userType.RESELLER]: 30,
   [userType.COMPANY_ADMIN]: 20,
-  [userType.USER]: 10
-}
+  [userType.USER]: 10,
+};
 
 const superAdmin = {
   [serviceName.BOT_SERVICE]: {
@@ -64,6 +64,13 @@ const superAdmin = {
   [serviceName.USER_SERVICE]: {
     [apiEnum.REQUEST_SIGNUP]: true,
     [apiEnum.SIGNUP]: true,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: true,
+    [apiEnum.DELETE_BY_ID]: true,
+  },
+  [serviceName.CATEGORY_SERVICE]: {
+    [apiEnum.CREATE]: true,
     [apiEnum.GET_ALL]: true,
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
@@ -131,6 +138,13 @@ const admin = {
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
   },
+  [serviceName.CATEGORY_SERVICE]: {
+    [apiEnum.CREATE]: true,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: true,
+    [apiEnum.DELETE_BY_ID]: true,
+  },
 };
 
 const companyAdmin = {
@@ -192,6 +206,13 @@ const companyAdmin = {
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
+  },
+  [serviceName.CATEGORY_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
   },
 };
 
@@ -255,6 +276,13 @@ const reseller = {
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
   },
+  [serviceName.CATEGORY_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
+  },
 };
 
 const user = {
@@ -316,6 +344,13 @@ const user = {
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
+  },
+  [serviceName.CATEGORY_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
   },
 };
 
@@ -379,6 +414,13 @@ const editor = {
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
   },
+  [serviceName.CATEGORY_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
+  },
 };
 
 const viewer = {
@@ -441,6 +483,13 @@ const viewer = {
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
   },
+  [serviceName.CATEGORY_SERVICE]: {
+    [apiEnum.CREATE]: false,
+    [apiEnum.GET_ALL]: true,
+    [apiEnum.GET_BY_ID]: true,
+    [apiEnum.UPDATE_BY_ID]: false,
+    [apiEnum.DELETE_BY_ID]: false,
+  },
 };
 
 module.exports = {
@@ -452,4 +501,4 @@ module.exports = {
   user,
   editor,
   viewer,
-}
+};
