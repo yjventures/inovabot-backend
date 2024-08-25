@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Bot = require("../models/bot");
 const { createError } = require("../common/error");
 const {
