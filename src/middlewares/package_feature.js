@@ -26,7 +26,12 @@ const packageFeature = async (req, res, next) => {
       return res.status(404).json({ message: "User not exist" });
     }
 
-    const company = await Company.findById(user?.company_id).lean();
+    let company = null;
+    if (req?.body?.company_id) {
+      company = await Company.findById(req.body.company_id);
+    } else {
+      company = await Company.find({ user_id: user._id });
+    }
 
     if (!company) {
       return res.status(404).json({ message: "User company not found" });
