@@ -73,21 +73,22 @@ const sendCompanyAdminInvitationController = async (req, res, next) => {
     if (!req.body.company_id) {
       return next(createError(400, "Company id must be provided"));
     }
-    const company = await findCompanyById(
-      req.body.company_id,
-      session
-    );
+    const company = await findCompanyById(req.body.company_id, session);
     if (!company) {
       return next(createError(404, "Company not found"));
     }
     if (req?.body?.user_id) {
       const oldUser = await findUserById(req.body.user_id, session);
+      let active_subscription = req?.body?.active_subscription
+        ? req.body?.active_subscription
+        : null;
       user = await updateUserById(
         oldUser._id.toString(),
         {
           company_id: company._id,
           company_position: userType.COMPANY_ADMIN,
           has_company: true,
+          active_subscription,
         },
         session
       );
@@ -103,7 +104,11 @@ const sendCompanyAdminInvitationController = async (req, res, next) => {
     const oldAdminId = company.user_id.toString();
     if (oldAdminId) {
       const oldAdmin = await findUserById(oldAdminId, session);
-      if (company._id && oldAdmin.company_id && company._id.equals(oldAdmin.company_id)) {
+      if (
+        company._id &&
+        oldAdmin.company_id &&
+        company._id.equals(oldAdmin.company_id)
+      ) {
         const updatedOldAdmin = await updateUserById(
           oldAdminId,
           { company_id: null, has_company: false, company_position: "" },
@@ -152,7 +157,6 @@ const checkTempPasswordController = async (req, res, next) => {
     }
   }
 };
-
 
 module.exports = {
   sendAdminInvitationController,
