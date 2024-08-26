@@ -43,6 +43,7 @@ const createUserService = async (req, session) => {
 
     if (req?.body?.company_id) {
       newUser.company_id = new mongoose.Types.ObjectId(reqBody.company_id);
+      newUser.active_subscription = new mongoose.Types.ObjectId(reqBody.active_subscription);
       newUser.has_company = req?.body?.has_company || null;
     }
 
