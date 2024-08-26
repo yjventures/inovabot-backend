@@ -26,6 +26,10 @@ const fileSchema = mongoose.Schema(
     file_id: {
       type: String,
       default: '',
+    },
+    url: {
+      type: String,
+      default: '',
     }
   },
   {

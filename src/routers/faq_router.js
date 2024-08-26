@@ -20,7 +20,7 @@ router.post(
 router.get(apiEnum.GET_ALL, process_query, faqController.getAllFaq);
 
 // ? API to get faq by ID
-router.get(apiEnum.GET_BY_ID, authenticateToken, faqController.getFaqByID);
+router.get(apiEnum.GET_BY_ID, faqController.getFaqByID);
 
 // ? API to update faq by ID
 router.put(
