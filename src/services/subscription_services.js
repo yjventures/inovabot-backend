@@ -6,7 +6,7 @@ const {
   findCompanyByObject,
 } = require("./company_services");
 const { findPackageById } = require("./package_services");
-const { findUserById } = require("./user_services");
+const { findUserById, updateUserById } = require("./user_services");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { createError } = require("../common/error");
 const Package = require("../models/package");
@@ -203,8 +203,8 @@ const updateSubscriptionInfoService = async (
     const body = {
       last_subscribed,
       expires_at,
-      active_subscription: package?._id,
     };
+
     console.log("Body:", body);
 
     const updateCompany = await updateCompanyById(companyId, body, session);
@@ -212,6 +212,14 @@ const updateSubscriptionInfoService = async (
 
     if (!updateCompany) {
       throw createError(500, "Failed to update company info");
+    }
+    const updateUser = await updateUserById(
+      user_id,
+      { active_subscription: null },
+      session
+    );
+    if (!updateUser) {
+      throw createError(500, "Failed to update user info");
     }
 
     return updateCompany;
