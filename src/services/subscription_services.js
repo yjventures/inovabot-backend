@@ -304,58 +304,117 @@ const handleCheckoutSessionCompleted = async (eventSession) => {
   }
 };
 
+// const handleUpdateSessionCompleted = async (eventSession) => {
+//   const session = await mongoose.startSession(); // Start a new session
+//   session.startTransaction(); // Start the transaction
+
+//   console.log("Received update session:", eventSession);
+//   try {
+//     const planId = eventSession?.plan?.id;
+//     const subscriptionId = eventSession?.id;
+
+//     const subscription = await stripe?.subscriptions?.retrieve(subscriptionId);
+//     //console.log("Subscription details:", subscription);
+
+//     const userId = eventSession?.metadata?.user_id;
+//     const packageId = eventSession?.metadata?.package_id;
+//     const startPeriod = subscription?.current_period_start;
+//     const endPeriod = subscription?.current_period_end;
+
+//     console.log("User ID:", userId);
+//     console.log("Package ID:", packageId);
+//     console.log("Start period:", startPeriod);
+//     console.log("End period:", endPeriod);
+
+//     const result = await updateSubscriptionInfoService(
+//       userId,
+//       session,
+//       startPeriod,
+//       endPeriod,
+//       planId,
+//       subscriptionId
+//     );
+//     console.log("updateSubscriptionInfoService Result:", result);
+
+//     // Commit the transaction if everything is successful
+//     await session.commitTransaction();
+//     console.log("Transaction committed successfully");
+//   } catch (err) {
+//     console.error("Error during subscription processing:", err);
+
+//     try {
+//       await session.abortTransaction(); // Abort the transaction if an error occurs
+//       console.error("Transaction aborted due to error");
+//     } catch (abortError) {
+//       console.error("Error aborting transaction:", abortError);
+//     } finally {
+//       session.endSession(); // End the session in any case
+//     }
+
+//     throw createError(500, `Error processing subscriptions: ${err.message}`);
+//   } finally {
+//     session.endSession(); // Ensure the session is always ended
+//   }
+// };
+
 const handleUpdateSessionCompleted = async (eventSession) => {
-  const session = await mongoose.startSession(); // Start a new session
-  session.startTransaction(); // Start the transaction
+  let retryCount = 0;
+  const maxRetries = 3;
 
-  console.log("Received update session:", eventSession);
-  try {
-    const planId = eventSession?.plan?.id;
-    const subscriptionId = eventSession?.id;
+  while (retryCount < maxRetries) {
+    const session = await mongoose.startSession(); // Start a new session
+    session.startTransaction(); // Start the transaction
 
-    const subscription = await stripe?.subscriptions?.retrieve(subscriptionId);
-    //console.log("Subscription details:", subscription);
-
-    const userId = eventSession?.metadata?.user_id;
-    const packageId = eventSession?.metadata?.package_id;
-    const startPeriod = subscription?.current_period_start;
-    const endPeriod = subscription?.current_period_end;
-
-    console.log("User ID:", userId);
-    console.log("Package ID:", packageId);
-    console.log("Start period:", startPeriod);
-    console.log("End period:", endPeriod);
-
-    const result = await updateSubscriptionInfoService(
-      userId,
-      session,
-      startPeriod,
-      endPeriod,
-      planId,
-      subscriptionId
-    );
-    console.log("updateSubscriptionInfoService Result:", result);
-
-    // Commit the transaction if everything is successful
-    await session.commitTransaction();
-    console.log("Transaction committed successfully");
-  } catch (err) {
-    console.error("Error during subscription processing:", err);
-
+    console.log("Received update session:", eventSession);
     try {
-      await session.abortTransaction(); // Abort the transaction if an error occurs
-      console.error("Transaction aborted due to error");
-    } catch (abortError) {
-      console.error("Error aborting transaction:", abortError);
-    } finally {
-      session.endSession(); // End the session in any case
-    }
+      const planId = eventSession?.plan?.id;
+      const subscriptionId = eventSession?.id;
 
-    throw createError(500, `Error processing subscriptions: ${err.message}`);
-  } finally {
-    session.endSession(); // Ensure the session is always ended
+      const subscription = await stripe?.subscriptions?.retrieve(subscriptionId);
+      const userId = eventSession?.metadata?.user_id;
+      const packageId = eventSession?.metadata?.package_id;
+      const startPeriod = subscription?.current_period_start;
+      const endPeriod = subscription?.current_period_end;
+
+      const result = await updateSubscriptionInfoService(
+        userId,
+        session,
+        startPeriod,
+        endPeriod,
+        planId,
+        subscriptionId
+      );
+      console.log("updateSubscriptionInfoService Result:", result);
+
+      // Commit the transaction if everything is successful
+      await session.commitTransaction();
+      console.log("Transaction committed successfully");
+      break; // Exit loop on success
+    } catch (err) {
+      console.error("Error during subscription processing:", err);
+
+      try {
+        await session.abortTransaction(); // Abort the transaction if an error occurs
+        console.error("Transaction aborted due to error");
+      } catch (abortError) {
+        console.error("Error aborting transaction:", abortError);
+      } finally {
+        session.endSession(); // End the session in any case
+      }
+
+      retryCount++;
+      if (retryCount >= maxRetries) {
+        // Throw an error if the max number of retries is reached
+        throw createError(500, `Error processing subscriptions: ${err.message}`);
+      }
+
+      console.log(`Retrying transaction (${retryCount}/${maxRetries})...`);
+    } finally {
+      session.endSession(); // Ensure the session is always ended
+    }
   }
 };
+
 
 // const handleWebhookEvent = async (event, session) => {
 //   try {
@@ -384,6 +443,8 @@ const handleUpdateSessionCompleted = async (eventSession) => {
 //     throw err;
 //   }
 // };
+
+
 
 const handleWebhookEvent = async (event) => {
   // const session = await mongoose.startSession();
