@@ -28,9 +28,9 @@ const packageFeature = async (req, res, next) => {
 
     let company = null;
     if (req?.body?.company_id) {
-      company = await Company.findById(req.body.company_id);
+      company = await Company.findById(req.body.company_id).lean();
     } else {
-      company = await Company.findOne({ user_id: user._id });
+      company = await Company.findOne({ user_id: user._id }).lean();
     }
 
     if (!company) {
