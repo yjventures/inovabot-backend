@@ -79,8 +79,8 @@ const sendCompanyAdminInvitationController = async (req, res, next) => {
     }
     if (req?.body?.user_id) {
       const oldUser = await findUserById(req.body.user_id, session);
-      let active_subscription = req?.body?.active_subscription
-        ? req.body?.active_subscription
+      let active_subscription = company?.active_subscription
+        ? company?.active_subscription
         : null;
       user = await updateUserById(
         oldUser._id.toString(),
@@ -99,6 +99,7 @@ const sendCompanyAdminInvitationController = async (req, res, next) => {
       req.body.type = userType.COMPANY_ADMIN;
       req.body.company_position = userType.COMPANY_ADMIN;
       req.body.has_company = true;
+      req.body.active_subscription = company?.active_subscription;
       user = await createUserService(req, session);
     }
     const oldAdminId = company.user_id.toString();
@@ -118,7 +119,7 @@ const sendCompanyAdminInvitationController = async (req, res, next) => {
     }
     const updateCompany = await updateCompanyById(
       company._id.toString(),
-      { user_id: user.user._id.toString() },
+      { user_id: user.user._id.toString(), active_subscription: null },
       session
     );
     await session.commitTransaction();
