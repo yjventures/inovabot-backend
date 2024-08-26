@@ -6,6 +6,10 @@ const faqSchema = mongoose.Schema(
       type: String,
       intl: true,
     },
+    answer: {
+      type: String,
+      intl: true,
+    },
     bot_id: {
       type: mongoose.Schema.Types.ObjectId,
       default: null,
@@ -13,7 +17,7 @@ const faqSchema = mongoose.Schema(
     },
     active: {
       type: Boolean,
-      default: false,
+      default: true,
     }
   },
   {
