@@ -39,7 +39,7 @@ const getFaqUsingQureystring = async (req, session) => {
         sortBy = req?.query?.sortBy;
       } else if (item === "search") {
         const regex = new RegExp(req.query.search, "i");
-        query.name = { $regex: regex };
+        query.question = { $regex: regex };
       } else if (item === "bot_id") {
         query[item] = new mongoose.Types.ObjectId(req?.query[item]);
       } else {
