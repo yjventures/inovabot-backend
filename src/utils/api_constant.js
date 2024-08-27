@@ -6,6 +6,7 @@ const apiEnum = {
   GET_ALL: '/get-all',
   GET_LIST: '/get-list',
   GET_BY_ID: '/get/:id',
+  GET_BY_URL: '/get-by-url/:url',
   UPDATE_BY_ID: '/update/:id',
   DELETE_BY_ID: '/delete/:id',
   FORGET_PASSWORD: '/forget-password', 
