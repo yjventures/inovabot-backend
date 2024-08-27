@@ -52,6 +52,7 @@ const createPackage = async (packageObj, session) => {
     packageObj.price.monthly.stripe_id = monthlyPrice.id;
     packageObj.price.yearly.stripe_id = yearlyPrice.id;
 
+    console.log(packageObj)
     // Create and save the package
     const packageCollection = new Package(packageObj);
     const package = await packageCollection.save({ session });
