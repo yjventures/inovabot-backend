@@ -22,6 +22,7 @@ router.post(
   ],
   authenticateToken,
   isPermitted(serviceName.BOT_SERVICE, apiEnum.CREATE),
+  packageFeature,
   botController.create
 );
 

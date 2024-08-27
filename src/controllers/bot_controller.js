@@ -52,6 +52,10 @@ const create = async (req, res, next) => {
     ) {
       return next(createError(404, "Permission denied"));
     }
+    const package = req?.body?.package;
+    if (!package) {
+      return next(createError(400, "Package not found"));
+    }
     const botObj = {
       user_id: id,
       company_id: company?._id,
