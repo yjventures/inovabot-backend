@@ -38,6 +38,9 @@ router.get(
 // ? API to get a bot using ID
 router.get(apiEnum.GET_BY_ID, botController.getBotByID);
 
+// ? API to get a bot using Embedding URL
+router.get(apiEnum.GET_BY_URL, botController.getBotByURL);
+
 // ? API to update a bot using ID
 router.put(
   apiEnum.UPDATE_BY_ID,
