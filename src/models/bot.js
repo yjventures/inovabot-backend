@@ -104,9 +104,10 @@ const botSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-    objective: {
+    embedding_url: {
       type: String,
-      default: "",
+      unique: true,
+      required: true,
     },
     call_to_action: {
       type: String,
