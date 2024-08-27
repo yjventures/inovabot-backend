@@ -23,7 +23,11 @@ const create = async (req, res, next) => {
     } else {
       const faqObj = {};
       for (let item in req?.body) {
-        faqObj[item] = req.body[item];
+        if (item === 'bot_id') {
+          faqObj[item] = new mongoose.Types.ObjectId(req.body[item]);
+        } else {
+          faqObj[item] = req.body[item];
+        }
       }
       const faq = await createFaq(faqObj, session);
       if (faq) {
