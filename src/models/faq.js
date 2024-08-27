@@ -4,11 +4,11 @@ const faqSchema = mongoose.Schema(
   {
     question: {
       type: String,
-      intl: true,
+      default: ''
     },
-    answer: {
+    objective: {
       type: String,
-      intl: true,
+      default: ''
     },
     bot_id: {
       type: mongoose.Schema.Types.ObjectId,
