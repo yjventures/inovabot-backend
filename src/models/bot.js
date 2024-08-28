@@ -182,6 +182,10 @@ const botSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    sounds_like: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
