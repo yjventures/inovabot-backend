@@ -9,7 +9,7 @@ const { employeeType } = require("../utils/enums");
 const createCompany = async (companyObj, session) => {
   try {
     const user = await findUserById(companyObj.user_id, session);
-    const customer = await createStripeCustomer(user.email);
+    const customer = await createStripeCustomer(companyObj.email);
     companyObj.stripe_customer_id = customer.id;
 
     const companyCollection = await new Company(companyObj);
