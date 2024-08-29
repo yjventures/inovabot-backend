@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Faq = require("../models/faq");
 const { createError } = require("../common/error");
 
@@ -21,24 +21,48 @@ const createFaq = async (faqObj, session) => {
 const getFaqUsingQureystring = async (req, session) => {
   try {
     const query = {};
+    let page = 1,
+      limit = 10;
+    let sortBy = "createdAt";
     for (let item in req?.query) {
-      if (item === "bot_id") {
+      if (item === "page") {
+        page = Number(req?.query?.page);
+        if (isNaN(page)) {
+          page = 1;
+        }
+      } else if (item === "limit") {
+        limit = Number(req?.query?.limit);
+        if (isNaN(limit)) {
+          limit = 10;
+        }
+      } else if (item === "sortBy") {
+        sortBy = req?.query?.sortBy;
+      } else if (item === "search") {
+        const regex = new RegExp(req.query.search, "i");
+        query.question = { $regex: regex };
+      } else if (item === "bot_id") {
         query[item] = new mongoose.Types.ObjectId(req?.query[item]);
       } else {
         query[item] = req?.query[item];
       }
     }
-    const faqs = await Faq.find(query).session(session);
-    const count = await Faq.countDocuments(query, {session});
+    const faqs = await Faq.find(query)
+      .sort(sortBy)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .session(session);
+    const count = await Faq.countDocuments(query, { session });
     return {
       data: faqs,
       metadata: {
         totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
       },
       message: "Success",
     };
   } catch (err) {
-    throw createError(404, "Faq not found"); 
+    throw createError(404, "Faq not found");
   }
 };
 
@@ -70,7 +94,10 @@ const updateFaqById = async (id, body, session) => {
         query[item] = body[item];
       }
     }
-    const updateFaq = await Faq.findByIdAndUpdate(id, query, { new: true, session }).lean();
+    const updateFaq = await Faq.findByIdAndUpdate(id, query, {
+      new: true,
+      session,
+    }).lean();
     if (!updateFaq) {
       throw createError(400, "Faq not updated");
     } else {
@@ -100,5 +127,5 @@ module.exports = {
   getFaqUsingQureystring,
   findFaqById,
   updateFaqById,
-  deleteFaqById
+  deleteFaqById,
 };

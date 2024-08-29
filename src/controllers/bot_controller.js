@@ -7,6 +7,7 @@ const {
   createBot,
   getBotUsingQureystring,
   findBotById,
+  findBotByUrl,
   updateBotById,
   deleteBotById,
   addFileToBot,
@@ -51,6 +52,10 @@ const create = async (req, res, next) => {
       company?.user_id.toString() !== user_id.toString()
     ) {
       return next(createError(404, "Permission denied"));
+    }
+    const package = req?.body?.package;
+    if (!package) {
+      return next(createError(400, "Package not found"));
     }
     const botObj = {
       user_id: id,
@@ -111,6 +116,23 @@ const getBotByID = async (req, res, next) => {
     session.startTransaction();
     const id = req?.params?.id;
     const bot = await findBotById(id, session);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ data: bot });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+// * Function to get a bot by embedding url
+const getBotByURL = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const url = req?.params?.url;
+    const bot = await findBotByUrl(url, session);
     await session.commitTransaction();
     session.endSession();
     res.status(200).json({ data: bot });
@@ -289,6 +311,7 @@ module.exports = {
   create,
   getAll,
   getBotByID,
+  getBotByURL,
   updateBotByID,
   deleteBotByID,
   uploadFileToBot,

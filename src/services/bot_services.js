@@ -212,6 +212,23 @@ const findBotById = async (id, session) => {
   }
 };
 
+// & Function to find a bot by embedding url
+const findBotByUrl = async (embedding_url, session) => {
+  try {
+    if (!embedding_url) {
+      throw createError(400, "Url need to be provided");
+    }
+    const bot = await Bot.findOne({ embedding_url }).session(session).lean();
+    if (bot) {
+      return bot;
+    } else {
+      throw createError(404, "Bot not found");
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 // & Function to update a bot by ID
 const updateBotById = async (id, body, session) => {
   try {
@@ -337,6 +354,7 @@ module.exports = {
   createBot,
   getBotUsingQureystring,
   findBotById,
+  findBotByUrl,
   updateBotById,
   deleteBotById,
   addFileToBot,

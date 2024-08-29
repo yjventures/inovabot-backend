@@ -32,6 +32,22 @@ const botSchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    bot_logo: {
+      type: String,
+      default: '',
+    },
+    user_logo: {
+      type: String,
+      default: '',
+    },
+    bg_light: {
+      type: String,
+      default: '',
+    },
+    bg_dark: {
+      type: String,
+      default: '',
+    },
     description: {
       type: String,
       default: '',
@@ -57,6 +73,18 @@ const botSchema = mongoose.Schema(
       default: '#050260',
     },
     font_color: {
+      type: String,
+      default: '#ffffff',
+    },
+    primary_color_dark: {
+      type: String,
+      default: '#044088',
+    },
+    secondary_color_dark: {
+      type: String,
+      default: '#050260',
+    },
+    font_color_dark: {
       type: String,
       default: '#ffffff',
     },
@@ -104,9 +132,10 @@ const botSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-    objective: {
+    embedding_url: {
       type: String,
-      default: "",
+      unique: true,
+      required: true,
     },
     call_to_action: {
       type: String,
@@ -150,6 +179,10 @@ const botSchema = mongoose.Schema(
       default: "",
     },
     web_url: {
+      type: String,
+      default: "",
+    },
+    sounds_like: {
       type: String,
       default: "",
     },
