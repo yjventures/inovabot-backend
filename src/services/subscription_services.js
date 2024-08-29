@@ -121,7 +121,7 @@ const saveSubscriptionInfoService = async (
     const body = {
       last_subscribed,
       expires_at,
-      active_subscription: true
+      payment_status: true
     };
 
     const updateCompany = await updateCompanyById(companyId, body, session);
@@ -204,7 +204,7 @@ const updateSubscriptionInfoService = async (
     const body = {
       last_subscribed,
       expires_at,
-      active_subscription: true,
+      payment_status: true,
     };
 
     console.log("Body:", body);
@@ -465,7 +465,7 @@ const handleSubscriptionDeletion = async (subscriptionData) => {
       throw createError(400, "User is not associated with a company");
     }
 
-    await User.findByIdAndUpdate(user_id, { active_subscription: false, last_subscribed: null, expires_at: null }, { session }); // Use session here
+    await User.findByIdAndUpdate(user_id, { payment_status: false, last_subscribed: null, expires_at: null }, { session }); // Use session here
 
     // If everything is successful, commit the transaction
     await session.commitTransaction();
