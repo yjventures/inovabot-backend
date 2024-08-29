@@ -49,7 +49,7 @@ const createStripeSubscriptionService = async (
       price_id,
       stripe_customer_id,
       user_id,
-      package_id
+      package_id,
     );
 
     // Send the URL of the checkout session as a JSON response
@@ -121,6 +121,7 @@ const saveSubscriptionInfoService = async (
     const body = {
       last_subscribed,
       expires_at,
+      payment_status: true
     };
 
     const updateCompany = await updateCompanyById(companyId, body, session);
@@ -203,6 +204,7 @@ const updateSubscriptionInfoService = async (
     const body = {
       last_subscribed,
       expires_at,
+      payment_status: true,
     };
 
     console.log("Body:", body);
@@ -444,6 +446,40 @@ const handleUpdateSessionCompleted = async (eventSession) => {
 //   }
 // };
 
+const handleSubscriptionDeletion = async (subscriptionData) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const user_id = subscriptionData.metadata.user_id; // Assuming you store user ID in metadata
+    const user = await findUserById(user_id).session(session); // Use session in query
+
+    if (!user) {
+      throw createError(404, "User not found");
+    }
+
+    const companyId = user.company_id;
+    console.log("User's company ID:", companyId);
+
+    if (!companyId) {
+      throw createError(400, "User is not associated with a company");
+    }
+
+    await User.findByIdAndUpdate(user_id, { payment_status: false, last_subscribed: null, expires_at: null }, { session }); // Use session here
+
+    // If everything is successful, commit the transaction
+    await session.commitTransaction();
+    console.log(`Subscription for user ${user_id} marked as inactive`);
+  } catch (err) {
+    // If any error occurs, abort the transaction
+    await session.abortTransaction();
+    console.error(`Error updating user subscription status: ${err.message}`);
+    throw err;
+  } finally {
+    // End the session
+    session.endSession();
+  }
+};
 
 
 const handleWebhookEvent = async (event) => {
@@ -467,8 +503,8 @@ const handleWebhookEvent = async (event) => {
         break;
 
       case "customer.subscription.deleted":
-        console.log("customer.subscription.deleted");
         // Handle subscription deletion logic here
+        await handleSubscriptionDeletion(event?.data?.object);
         break;
 
       // Handle other event types as needed
