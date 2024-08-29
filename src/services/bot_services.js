@@ -12,8 +12,9 @@ const {
   addFileInVectorStore,
   deleteFileInVectorStore,
 } = require("../utils/open_ai_utils");
-const { addFile, getFile, deleteFile } = require("../services/file_services");
+const { addFile, getFile, deleteFile, checkMemory } = require("../services/file_services");
 const { incrementInCompany } = require("../services/company_services");
+const { convertToBytes } = require("../utils/file_utils");
 
 // & Function to create bot instructions
 const createBotInstructions = (req) => {
@@ -45,6 +46,9 @@ const createBotInstructions = (req) => {
     }
     if (req?.body?.first_message) {
       instruction += `\n\nFirst message:\n${req.body.first_message}`;
+    }
+    if (req?.body?.sounds_like) {
+      instruction += `\n\nYou sound like:\n${req.body.sounds_like}`;
     }
     instruction += `\n\nIgnore any empty fiends in your instructions.\n\nYou will respond in clean, proper HTML so the application can render it straight away. Normal text will be wrapped in a <p> tag. You will format the links as html links with an <a> tag. Links will have yellow font. Use divs and headings to properly separate different sections. Make sure text doesn't overlap and there is adequate line spacing.`;
     return instruction;
@@ -313,6 +317,13 @@ const deleteBotById = async (id, session) => {
 const addFileToBot = async (id, file_path, file, package, session) => {
   try {
     const bot = await findBotById(id, session);
+    if (!package) {
+      throw createError(400, "Package not found");
+    }
+    const storageSize = await checkMemory(bot.company_id, Number(file.size), session);
+    if (convertToBytes(package["total_file_storage"]) <= storageSize) {
+      throw createError(400, "Maximum storage exceeded, upgrade package to get more storage");
+    }
     const myVectorStoreFile = await addFileInVectorStore(
       bot.vector_store_id,
       file_path
@@ -328,7 +339,7 @@ const addFileToBot = async (id, file_path, file, package, session) => {
         company_id: bot.company_id,
         bot_id: id,
       };
-      const newFile = await addFile(fileObj, package, session);
+      const newFile = await addFile(fileObj, session);
       return newFile;
     }
   } catch (err) {
@@ -349,6 +360,16 @@ const deleteFileFromBot = async (bot_id, file_id, session) => {
   }
 };
 
+// & Function to count bot opened by company
+const countBot = async (company_id, session) => {
+  try {
+    const count = await Bot.countDocuments({company_id}, {session});
+    return count;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createBotInstructions,
   createBot,
@@ -359,4 +380,5 @@ module.exports = {
   deleteBotById,
   addFileToBot,
   deleteFileFromBot,
+  countBot,
 };

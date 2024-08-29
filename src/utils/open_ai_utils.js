@@ -1,6 +1,7 @@
 const { OpenAI } = require("openai");
 const { EventEmitter } = require("events");
 const fs = require("fs");
+const { createError } = require("../common/error");
 require("dotenv").config();
 
 const openAiConfig = {
