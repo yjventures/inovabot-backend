@@ -12,7 +12,9 @@ const {
   deleteBotById,
   addFileToBot,
   deleteFileFromBot,
+  countBot,
 } = require("../services/bot_services");
+const { checkMemory } = require("../services/file_services");
 const {
   findCompanyByObject,
   findCompanyById,
@@ -56,6 +58,10 @@ const create = async (req, res, next) => {
     const package = req?.body?.package;
     if (!package) {
       return next(createError(400, "Package not found"));
+    }
+    const botCount = await countBot(company._id, session);
+    if (botCount >= Number(package['bot_limit'])) {
+      return next(createError(400, "Bot limit exceeded, please upgrade your package"));
     }
     const botObj = {
       user_id: id,
@@ -116,9 +122,10 @@ const getBotByID = async (req, res, next) => {
     session.startTransaction();
     const id = req?.params?.id;
     const bot = await findBotById(id, session);
+    const totalStorage = await checkMemory(bot.company_id, 0, session);
     await session.commitTransaction();
     session.endSession();
-    res.status(200).json({ data: bot });
+    res.status(200).json({ data: bot, totalStorage });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -248,6 +255,7 @@ const deleteBotByID = async (req, res, next) => {
 // * Function to upload a file to the bot by ID
 const uploadFileToBot = async (req, res, next) => {
   const session = await mongoose.startSession();
+  let fullPath = null;
   try {
     session.startTransaction();
     if (!req.file) {
@@ -257,7 +265,7 @@ const uploadFileToBot = async (req, res, next) => {
     if (!fileLocation) {
       return next(createError(400, "env for file location is missing"));
     }
-    const fullPath = path.join(fileLocation, req.file.filename);
+    fullPath = path.join(fileLocation, req.file.filename);
     const bot_id = req?.body?.bot_id;
     if (!bot_id) {
       return next(createError(400, "bot_id not provided"));
@@ -280,6 +288,7 @@ const uploadFileToBot = async (req, res, next) => {
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
+    fs.unlinkSync(fullPath);
     next(err);
   }
 };

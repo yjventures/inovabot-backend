@@ -2,12 +2,12 @@ const mongoose = require('mongoose');
 const File = require('../models/file');
 const { createError } = require("../common/error");
 
-// & Function to add a file to a bot
-const addFile = async (fileObj, package, session) => {
+// & Function to check memory of a company
+const checkMemory = async (company_id, fileSize, session) => {
   try {
     const result = await File.aggregate([
       {
-        $match: { company_id: new mongoose.Types.ObjectId(fileObj.company_id) }
+        $match: { company_id: new mongoose.Types.ObjectId(company_id) }
       },
       {
         $group: {
@@ -15,11 +15,17 @@ const addFile = async (fileObj, package, session) => {
           totalSize: { $sum: "$size" }
         }
       }
-    ]);
-    const totalSize = ((result.length) > 0 ? result[0].totalSize : 0) + fileObj.size;
-    if (package.total_file_storage < totalSize) {
-      throw createError(400, "Maximum storage exceeded");
-    }
+    ]).session(session);
+    const totalSize = ((result.length) > 0 ? result[0].totalSize : 0) + fileSize;
+    return totalSize;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// & Function to add a file to a bot
+const addFile = async (fileObj, session) => {
+  try {
     const fileCollection = await new File(fileObj);
     const file = await fileCollection.save({ session });
     if (!file) {
@@ -110,6 +116,7 @@ module.exports = {
   getFiles,
   getFile,
   deleteFile,
+  checkMemory,
 }
 
 // {
