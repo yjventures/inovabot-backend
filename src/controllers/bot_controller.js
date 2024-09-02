@@ -122,10 +122,10 @@ const getBotByID = async (req, res, next) => {
     session.startTransaction();
     const id = req?.params?.id;
     const bot = await findBotById(id, session);
-    const totalStorage = await checkMemory(bot.company_id, 0, session);
+    const usedStorage = await checkMemory(bot.company_id, 0, session);
     await session.commitTransaction();
     session.endSession();
-    res.status(200).json({ data: bot, totalStorage });
+    res.status(200).json({ data: bot, usedStorage });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();

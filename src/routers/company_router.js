@@ -60,4 +60,12 @@ router.delete(
   companyController.deleteCompanyByID
 );
 
+// ? API to get storage of company
+router.post(
+  apiEnum.GET_STORAGE,
+  authenticateToken,
+  packageFeature,
+  companyController.getStorage
+);
+
 module.exports = router;

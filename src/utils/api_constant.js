@@ -30,6 +30,7 @@ const apiEnum = {
   INVITE_RESELLER: '/invite-reseller',
   ANALYTICS_TOTAL_DATA: '/total-data',
   INVITE_COMPANY_ADMIN: '/invite-company-admin',
+  GET_STORAGE: '/get-storage',
 };
 
 module.exports = apiEnum;

@@ -10,6 +10,8 @@ const {
 } = require("../services/company_services");
 const { userType } = require("../utils/enums");
 const { createError } = require("../common/error");
+const { convertToBytes } = require("../utils/file_utils");
+const { checkMemory } = require("../services/file_services");
 
 // * Function to create a company
 const create = async (req, res, next) => {
@@ -252,6 +254,28 @@ const deleteCompanyByID = async (req, res, next) => {
   }
 };
 
+// * Function to get storage of a company
+const getStorage = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const totalStorage = req?.body?.package?.total_file_storage;
+    if (!totalStorage) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(404, "Package does not found"));
+    }
+    const usedStorage = await checkMemory(req.body.company_id, 0, session);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ data: {totalStorage: convertToBytes(totalStorage), usedStorage } });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
 module.exports = {
   create,
   getAllCompany,
@@ -259,4 +283,5 @@ module.exports = {
   updateCompanyByID,
   deleteCompanyByID,
   getCompanyList,
+  getStorage,
 };
