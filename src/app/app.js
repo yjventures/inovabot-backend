@@ -94,6 +94,9 @@ app.use('/categories', require('../routers/category_router'));
 // ~ Router for faqs
 app.use('/faqs', require('../routers/faq_router'));
 
+// ~ Router for links
+app.use('/links', require('../routers/link_router'));
+
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
   if (res.headersSent) {

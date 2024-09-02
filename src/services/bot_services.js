@@ -50,6 +50,12 @@ const createBotInstructions = (req) => {
     if (req?.body?.sounds_like) {
       instruction += `\n\nYou sound like:\n${req.body.sounds_like}`;
     }
+    if (req?.body?.links && req?.body?.links?.length > 0) {
+      instruction += `\n\nYou will use these links like:\n`;
+      for (let item of req.body.links) {
+        instruction += `${item.objective}: ${item.link}`;
+      }
+    }
     instruction += `\n\nIgnore any empty fiends in your instructions.\n\nYou will respond in clean, proper HTML so the application can render it straight away. Normal text will be wrapped in a <p> tag. You will format the links as html links with an <a> tag. Links will have yellow font. Use divs and headings to properly separate different sections. Make sure text doesn't overlap and there is adequate line spacing.`;
     return instruction;
   } catch (err) {
