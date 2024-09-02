@@ -259,6 +259,9 @@ const updateBotById = async (id, body, session) => {
       {
         type: "code_interpreter",
       },
+      {
+        type: "file_search",
+      },
     ];
     if (body?.image_display) {
       tools.push({
