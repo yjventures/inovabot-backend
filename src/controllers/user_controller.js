@@ -31,7 +31,7 @@ const create = async (req, res, next) => {
       const userObj = decryptLink(link);
       const password = userObj.password;
       const newUser = await createUser(userObj, userObj.password, session);
-      const user = await handleEmailLogin(userObj?.email, password, session);
+      const { user } = await handleEmailLogin(userObj?.email, password, session);
       await session.commitTransaction();
       session.endSession();
       res.status(200).json({ message: "User created succesfully", user });
