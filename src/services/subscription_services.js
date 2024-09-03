@@ -284,6 +284,16 @@ const handleCheckoutSessionCompleted = async (eventSession) => {
       subscriptionId
     );
 
+    //TODO: this is for active subscription is equal null
+    const updateUser = await updateUserById(
+      userId,
+      { active_subscription: null },
+      session
+    );
+    if (!updateUser) {
+      throw createError(500, "Failed to update user info");
+    }
+
     // Commit the transaction if everything is successful
     await session.commitTransaction();
     console.log("Transaction committed successfully");
