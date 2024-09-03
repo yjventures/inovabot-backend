@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Package = require("../models/package");
 const Subscription = require("../models/subscription");
 const User = require("../models/user");
@@ -75,5 +76,5 @@ module.exports = { packageFeature };
 
 /*
   use this like any where for find any feature value
-  const feature1Value = package.value['feature1'];
+  const feature1Value = package['feature1'];
 */

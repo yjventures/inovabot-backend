@@ -8,7 +8,7 @@ const {
 } = require("../services/subscription_services");
 const mongoose = require("mongoose");
 const { createError } = require("../common/error");
-const { findUserById } = require("../services/user_services");
+const { findPackageById } = require("../services/package_services");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const getAllPrice = async (req, res, next) => {
@@ -34,6 +34,23 @@ const createStripeSubscription = async (req, res, next) => {
       await session.abortTransaction();
       session.endSession();
       return next(createError(400, "price id and package_id must be provided"));
+    }
+    const package = await findPackageById(package_id, session);
+    if (Number(package.price.monthly.price) === 0) {
+      if (!req?.body?.user_id) {
+        return next(createError(400, "user_id must be provided for free package"));
+      }
+      const today = new Date();
+      const subscriptionInfo = await saveSubscriptionInfoService(
+        req?.body?.user_id,
+        package_id,
+        session,
+        today,
+        today.setFullYear(today.getFullYear() + 100),
+      );
+      await session.commitTransaction();
+      session.endSession();
+      return res.status(200).json({ message: "Free subscription created successfully" });
     }
     const stripeSession = await createStripeSubscriptionService(
       price_id,
