@@ -9,6 +9,7 @@ const {
   deleteUserById,
 } = require("../services/user_services");
 const { findCompanyById } = require("../services/company_services");
+const { handleEmailLogin } = require("../services/auth_services");
 const { createError } = require("../common/error");
 const { userType } = require("../utils/enums");
 const { SendEmailUtils } = require("../utils/send_email_utils");
@@ -28,7 +29,9 @@ const create = async (req, res, next) => {
     const link = req?.body?.link;
     if (link) {
       const userObj = decryptLink(link);
-      const user = await createUser(userObj, userObj.password, session);
+      const password = userObj.password;
+      const newUser = await createUser(userObj, userObj.password, session);
+      const user = await handleEmailLogin(userObj?.email, password, session);
       await session.commitTransaction();
       session.endSession();
       res.status(200).json({ message: "User created succesfully", user });
