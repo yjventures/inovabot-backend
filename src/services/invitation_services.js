@@ -73,6 +73,8 @@ const createUserService = async (req, session) => {
         } else {
           permission = roles.viewer;
         }
+      } else {
+        permission = roles.companyAdmin;
       }
       const roleBody = {
         name: reqBody.type,
