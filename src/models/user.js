@@ -35,7 +35,7 @@ const userSchema = mongoose.Schema(
         userType.RESELLER,
         userType.USER,
       ],
-      default: "user",
+      default: userType.COMPANY_ADMIN,
     },
     last_subscribed: {
       type: Date,

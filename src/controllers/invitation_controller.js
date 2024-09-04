@@ -87,6 +87,7 @@ const sendCompanyAdminInvitationController = async (req, res, next) => {
         {
           company_id: company._id,
           company_position: userType.COMPANY_ADMIN,
+          type: userType.COMPANY_ADMIN,
           has_company: true,
           active_subscription,
         },
@@ -98,6 +99,7 @@ const sendCompanyAdminInvitationController = async (req, res, next) => {
       }
       req.body.type = userType.COMPANY_ADMIN;
       req.body.company_position = userType.COMPANY_ADMIN;
+      req.body.type = userType.COMPANY_ADMIN;
       req.body.has_company = true;
       req.body.active_subscription = company?.active_subscription;
       user = await createUserService(req, session);

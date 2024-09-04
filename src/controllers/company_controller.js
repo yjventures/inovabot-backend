@@ -28,6 +28,10 @@ const create = async (req, res, next) => {
       if (!user_id) {
         throw createError(404, "User not found");
       }
+      const company_email = req?.user?.email;
+      if (!company_email) {
+        throw createError(404, "Company email not provided");
+      }
       if (req?.user?.type === userType.RESELLER) {
         req.body.reseller_id = user_id;
         req.body.user_id = user_id;
