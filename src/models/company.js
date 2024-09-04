@@ -90,6 +90,10 @@ const companySchema = mongoose.Schema(
       default: null,
       ref: 'Package',
     },
+    price_id: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,
