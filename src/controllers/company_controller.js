@@ -281,6 +281,7 @@ const getStorage = async (req, res, next) => {
   }
 };
 
+// * Function to get subscription info of a company
 const getSubscriptionInfoFromCompany = async(req, res, next)=>{
   const session = await mongoose.startSession();
   try{

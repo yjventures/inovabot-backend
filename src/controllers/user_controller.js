@@ -7,6 +7,7 @@ const {
   getUsers,
   updateUserById,
   deleteUserById,
+  changeUserRolebyId,
 } = require("../services/user_services");
 const { findCompanyById } = require("../services/company_services");
 const { handleEmailLogin } = require("../services/auth_services");
@@ -31,7 +32,11 @@ const create = async (req, res, next) => {
       const userObj = decryptLink(link);
       const password = userObj.password;
       const newUser = await createUser(userObj, userObj.password, session);
-      const { user } = await handleEmailLogin(userObj?.email, password, session);
+      const { user } = await handleEmailLogin(
+        userObj?.email,
+        password,
+        session
+      );
       await session.commitTransaction();
       session.endSession();
       res.status(200).json({ message: "User created succesfully", user });
@@ -294,6 +299,52 @@ const deleteUserByID = async (req, res, next) => {
   }
 };
 
+// * Function to change user role by ID
+const changeUserRoleByID = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const user_id = req?.body?.user_id;
+    const role_name = req?.body?.role_name;
+    if (!user_id || !role_name) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "User id and role name must be provided"));
+    }
+    const oldUser = await findUserById(user_id, session);
+    const company = await findCompanyById(oldUser._id.toString(), session);
+    if (
+      req.user.type === userType.RESELLER &&
+      company?.reseller_id.toString() !== req.user.id.toString()
+    ) {
+      throw createError(400, "Not on your authorization");
+    }
+    if (
+      req.user.type === userType.COMPANY_ADMIN &&
+      company?.user_id.toString() !== req.user.id.toString()
+    ) {
+      throw createError(400, "Not on your authorization");
+    }
+    if (
+      req.user.type === userType.USER &&
+      company?._id.toString() !== req.user.company_id.toString()
+    ) {
+      throw createError(400, "Not on your authorization");
+    }
+    if (precidency[req.user.type] < precidency[oldUser.type]) {
+      throw createError(400, "Not on your authorization");
+    }
+    const role = await changeUserRolebyId(user_id, role_name, session);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ message: "success", role });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
 module.exports = {
   requestCreate,
   create,
@@ -301,4 +352,5 @@ module.exports = {
   getUserByID,
   updateUserByID,
   deleteUserByID,
+  changeUserRoleByID,
 };

@@ -68,6 +68,7 @@ router.post(
   companyController.getStorage
 );
 
+// ? API to get subscription info from a company
 router.get(
   apiEnum.STRIPE_SUBSCRIPTION_INFO,
   companyController.getSubscriptionInfoFromCompany
