@@ -7,6 +7,7 @@ const {
   updateCompanyById,
   deleteCompanyById,
   getCompanyListWithoutQuery,
+  findSubscriptionByCompanyId
 } = require("../services/company_services");
 const { userType } = require("../utils/enums");
 const { createError } = require("../common/error");
@@ -280,6 +281,33 @@ const getStorage = async (req, res, next) => {
   }
 };
 
+const getSubscriptionInfoFromCompany = async(req, res, next)=>{
+  const session = await mongoose.startSession();
+  try{
+    session.startTransaction();
+    const company_id = req?.body?.company_id;
+    if(!company_id){
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(404, "Company id not provided"));
+    }
+    const company = await findCompanyById(company_id, session);
+    if(!company){
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(404, "Company not found"));
+    }
+    const subscription = await findSubscriptionByCompanyId(company_id, session);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({data: subscription});
+  }catch(err){
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+}
+
 module.exports = {
   create,
   getAllCompany,
@@ -288,4 +316,5 @@ module.exports = {
   deleteCompanyByID,
   getCompanyList,
   getStorage,
+  getSubscriptionInfoFromCompany
 };

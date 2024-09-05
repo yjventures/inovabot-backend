@@ -29,7 +29,7 @@ const createStripeSubscription = async (req, res, next) => {
   try {
     session.startTransaction();
     const { id } = req.user;
-    const { price_id, package_id } = req.body;
+    const { price_id, package_id, recurring_type } = req.body;
     if (!price_id || !package_id) {
       await session.abortTransaction();
       session.endSession();
@@ -56,6 +56,7 @@ const createStripeSubscription = async (req, res, next) => {
       price_id,
       id,
       package_id,
+      recurring_type,
       session
     );
     if (!stripeSession) {
@@ -199,7 +200,7 @@ const handleWebhook = async (req, res, next) => {
     await session.abortTransaction();
     session.endSession();
     console.log(`⚠️  Webhook signature verification failed: ${err.message}`);
-    return next(createError(503, `Webhook Error: ${err.message}`));
+    return next(createError(503, `Something wrong in subscription`));
   }
 };
 

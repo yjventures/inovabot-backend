@@ -95,6 +95,7 @@ const subscriptionSession = async (
   priceId,
   stripeCustomerId,
   userId,
+  recurring_type,
   packageId
 ) => {
   try {
@@ -119,6 +120,8 @@ const subscriptionSession = async (
         metadata: {
           user_id: userId,
           package_id: packageId,
+          recurring_type: recurring_type,
+          price_id: priceId
         },
       },
     });
