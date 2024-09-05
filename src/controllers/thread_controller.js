@@ -89,11 +89,6 @@ const runThreadByID = async (req, res, next) => {
       session.endSession();
       return next(createError(400, "Message not provided."));
     }
-    if (!req?.body?.instructions) {
-      await session.abortTransaction();
-      session.endSession();
-      return next(createError(400, "Instructions not provided."));
-    }
     
     res.sseSetup();
     const eventEmitter = new EventEmitter();
@@ -115,7 +110,7 @@ const runThreadByID = async (req, res, next) => {
       eventEmitter.removeAllListeners("event");
     });
     
-    const result = await runThreadById(req?.body?.thread_id, req?.body?.message, eventEmitter, req?.body?.instructions, session);
+    const result = await runThreadById(req?.body?.thread_id, req?.body?.message, eventEmitter, session);
     await session.commitTransaction();
     session.endSession();
   } catch (err) {

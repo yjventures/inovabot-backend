@@ -96,11 +96,11 @@ const getMessageById = async (id, session) => {
 };
 
 // & Function to run a thread by ID
-const runThreadById = async (id, message, eventEmitter, instructions, session) => {
+const runThreadById = async (id, message, eventEmitter, session) => {
   try {
     const thread = await getThreadById(id, session);
     const bot = await findBotById(thread.bot_id, session);
-    await runThread(bot.assistant_id, thread.thread_id, message, eventEmitter, instructions);
+    await runThread(bot.assistant_id, thread.thread_id, message, eventEmitter);
   } catch (err) {
     throw err;
   }
