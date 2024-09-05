@@ -12,7 +12,7 @@ const {
 const { findCompanyById } = require("../services/company_services");
 const { handleEmailLogin } = require("../services/auth_services");
 const { createError } = require("../common/error");
-const { userType } = require("../utils/enums");
+const { userType, userRoleType } = require("../utils/enums");
 const { SendEmailUtils } = require("../utils/send_email_utils");
 const {
   generateVerificationLink,
@@ -335,9 +335,17 @@ const changeUserRoleByID = async (req, res, next) => {
       throw createError(400, "Not on your authorization");
     }
     const role = await changeUserRolebyId(user_id, role_name, session);
+    const body = {};
+    if (role_name === 'editor' || role_name === 'viewer') {
+      body.type = userType.USER;
+      body.company_position = role_name;
+    } else {
+      body.type = role_name;
+    }
+    const user = await updateUserByID(user_id, body, session);
     await session.commitTransaction();
     session.endSession();
-    res.status(200).json({ message: "success", role });
+    res.status(200).json({ message: "success", user, role });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
