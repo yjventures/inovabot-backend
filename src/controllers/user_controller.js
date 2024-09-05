@@ -215,7 +215,7 @@ const updateUserByID = async (req, res, next) => {
     }
     if (req?.body) {
       const oldUser = await findUserById(id, session);
-      const company = await findCompanyById(oldUser._id.toString(), session);
+      const company = await findCompanyById(oldUser.company_id.toString(), session);
       if (
         req.user.type === userType.RESELLER &&
         company?.reseller_id.toString() !== req.user.id.toString()
@@ -265,7 +265,7 @@ const deleteUserByID = async (req, res, next) => {
       return next(createError(400, "Not provide user id"));
     } else {
       const oldUser = await findUserById(id, session);
-      const company = await findCompanyById(oldUser._id.toString(), session);
+      const company = await findCompanyById(oldUser.company_id.toString(), session);
       if (
         req.user.type === userType.RESELLER &&
         company?.reseller_id.toString() !== req.user.id.toString()
@@ -312,7 +312,7 @@ const changeUserRoleByID = async (req, res, next) => {
       return next(createError(400, "User id and role name must be provided"));
     }
     const oldUser = await findUserById(user_id, session);
-    const company = await findCompanyById(oldUser._id.toString(), session);
+    const company = await findCompanyById(oldUser.company_id.toString(), session);
     if (
       req.user.type === userType.RESELLER &&
       company?.reseller_id.toString() !== req.user.id.toString()
