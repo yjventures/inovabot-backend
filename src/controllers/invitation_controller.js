@@ -52,7 +52,7 @@ const sendUserInvitationController = async (req, res, next) => {
   try {
     session.startTransaction();
     req.body.type = userType.USER;
-    req.body.company_position = userType.USER;
+    req.body.company_position = req.body.role;
     const createUser = await createUserService(req, session);
     await session.commitTransaction();
     session.endSession();
