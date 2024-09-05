@@ -133,6 +133,28 @@ const subscriptionSession = async (
   }
 };
 
+// ^ upgrade a checkout session for a subscription
+const updateSubscription = async (price_id,
+  subscriptionId) => {
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+    const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
+      items: [{
+        id: subscription.items.data[0].id,
+        price: price_id,
+      }],
+      proration_behavior: 'create_prorations',
+
+    });
+
+    return updatedSubscription;
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    throw createError(500, "Failed to update subscription");
+  }
+};
+
 // ^ List all subscriptions for the user with their stripe_customer_id
 const getAllSubscription = async (userCustomerId) => {
   try {
@@ -153,5 +175,6 @@ module.exports = {
   createStripeCustomer,
   subscriptionSession,
   getAllSubscription,
-  createProductWithMultiplePrices
+  createProductWithMultiplePrices,
+  updateSubscription
 };

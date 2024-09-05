@@ -94,6 +94,10 @@ const companySchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    subscription_id:{
+      type: String,
+      default: '',
+    }
   },
   {
     timestamps: true,
