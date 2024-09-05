@@ -159,7 +159,7 @@ const getMessagesOfThread = async (thread_id) => {
 };
 
 // ^ Function to run a thread
-const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter, instructions) => {
+const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter) => {
   try {
     const message = await openai.beta.threads.messages.create(
       thread_id,
@@ -174,7 +174,6 @@ const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter, inst
       thread_id,
       {
         assistant_id,
-        instructions,
       },
       eventHandler,
     );

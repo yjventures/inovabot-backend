@@ -9,6 +9,7 @@ const apiEnum = {
   GET_BY_URL: '/get-by-url/:url',
   UPDATE_BY_ID: '/update/:id',
   DELETE_BY_ID: '/delete/:id',
+  UPDATE_ROLE: '/update-role',
   FORGET_PASSWORD: '/forget-password', 
   RESET_PASSWORD: '/reset-password',
   CHECK_PASSWORD: "/check-password",

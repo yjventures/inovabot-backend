@@ -2,8 +2,9 @@ const User = require("../models/user");
 const {
   createRole,
   deleteRoleUsingObject,
+  updateRoleUsingUser,
 } = require("./role_services");
-const { userType } = require("../utils/enums");
+const { userType, userRoleType } = require("../utils/enums");
 const roles = require("../utils/roles");
 const { createError } = require("../common/error");
 const { hashPassword } = require("../common/manage_pass");
@@ -38,13 +39,13 @@ const createUser = async (userBody, password, session) => {
     const hash = await hashPassword(password);
     userBody.password = hash;
     const userCollection = await new User(userBody);
-    const user = await userCollection.save({session});
+    const user = await userCollection.save({ session });
     if (user) {
       const roleBody = {
         name: userType.COMPANY_ADMIN,
         user_id: user._id,
         permission: roles.companyAdmin,
-      }
+      };
       const role = await createRole(roleBody, session);
       if (!role) {
         throw createError(400, "Role not assigned");
@@ -62,7 +63,8 @@ const createUser = async (userBody, password, session) => {
 const getUsers = async (req, session) => {
   try {
     const query = {};
-    let page = 1, limit = 10;
+    let page = 1,
+      limit = 10;
     let sortBy = "createdAt";
     for (let item in req?.query) {
       if (item === "page") {
@@ -89,7 +91,7 @@ const getUsers = async (req, session) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .session(session);
-    const count = await User.countDocuments(query, {session});
+    const count = await User.countDocuments(query, { session });
     return {
       data: users,
       metadata: {
@@ -109,7 +111,11 @@ const updateUserById = async (id, body, session) => {
   try {
     const query = await findUserById(id, session);
     for (let item in body) {
-      if (item == "birthdate" || item === "last_subscribed" || item === "expires_at") {
+      if (
+        item == "birthdate" ||
+        item === "last_subscribed" ||
+        item === "expires_at"
+      ) {
         if (body[item]) {
           const bday = body?.birthdate;
           query.birthdate = new Date(bday);
@@ -147,6 +153,34 @@ const deleteUserById = async (id, session) => {
   }
 };
 
+// & Function to change role of a user by ID
+const changeUserRolebyId = async (id, roleName, session) => {
+  try {
+    const user = await findUserById(id, session);
+    let permission = null, name = null;
+    if (roleName === userType.ADMIN) {
+      name = userType.ADMIN;
+      permission = roles.admin;
+    } else if (roleName === userType.RESELLER) {
+      name = userType.RESELLER;
+      permission = roles.reseller;
+    } else if (roleName === userRoleType.EDITOR) {
+      name = userType.USER;
+      permission = roles.editor;
+    } else if (roleName === userRoleType.VIEWER) {
+      name = userType.USER;
+      permission = roles.viewer;
+    } else {
+      name = userType.COMPANY_ADMIN;
+      permission = roles.companyAdmin;
+    }
+    const role = await updateRoleUsingUser(id, { name, permission }, session);
+    return role;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   findUserById,
   findUserByObject,
@@ -154,4 +188,5 @@ module.exports = {
   getUsers,
   updateUserById,
   deleteUserById,
-}
+  changeUserRolebyId,
+};

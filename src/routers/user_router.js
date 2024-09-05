@@ -58,6 +58,14 @@ router.delete(
   userController.deleteUserByID
 );
 
+// ? API to change user role by ID
+router.put(
+  apiEnum.UPDATE_ROLE,
+  authenticateToken,
+  isPermitted(serviceName.USER_SERVICE, apiEnum.UPDATE_BY_ID),
+  userController.changeUserRoleByID
+);
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 router.post(apiEnum.UPLOAD, upload.single("file"), uploadImage);
