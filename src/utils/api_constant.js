@@ -31,6 +31,8 @@ const apiEnum = {
   ANALYTICS_TOTAL_DATA: '/total-data',
   INVITE_COMPANY_ADMIN: '/invite-company-admin',
   GET_STORAGE: '/get-storage',
+  UPGRADE_DOWNGRADE_SUBSCRIPTION: '/update',
+  CANCEL_SUBSCRIPTION: '/cancel'
 };
 
 module.exports = apiEnum;
