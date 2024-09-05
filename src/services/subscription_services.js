@@ -1,6 +1,6 @@
 const { convertUnixTimestampToDate } = require("../common/manage_date");
 const subscription = require("../models/subscription");
-const { subscriptionSession } = require("../utils/stripe_utils");
+const { subscriptionSession, updateSubscription } = require("../utils/stripe_utils");
 const {
   updateCompanyById,
   findCompanyByObject,
@@ -63,6 +63,61 @@ const createStripeSubscriptionService = async (
   } catch (error) {
     // Log any errors that occur
     console.error(error);
+    throw error;
+  }
+};
+
+// & upgrade or downgrade stripe subscription
+const upgradeStripeSubscriptionService = async (
+  price_id,
+  user_id,
+  package_id,
+  recurring_type,
+  session
+) => {
+  try {
+    const company = await findCompanyByObject({ user_id }, session);
+    if (!company) {
+      throw createError(404, "Company not found");
+    }
+    const stripe_customer_id = company?.stripe_customer_id;
+    const subscriptionId = company?.subscription_id;
+
+    if (!stripe_customer_id) {
+      throw createError(400, "stripe customer id not found");
+    }
+    if (!subscriptionId) {
+      throw createError(400, "subscription id not found");
+    }
+
+    // Update the subscription with the new price
+    const updatedSubscription = await updateSubscription(price_id, subscriptionId);
+
+    // Extract the start and end periods from the updated subscription
+    const start_period = updatedSubscription.current_period_start; // Unix timestamp
+    const end_period = updatedSubscription.current_period_end;     // Unix timestamp
+
+    const last_subscribed = convertUnixTimestampToDate(start_period);
+
+    const expires_at = convertUnixTimestampToDate(end_period);
+    const body = {
+      last_subscribed,
+      expires_at,
+      payment_status: true,
+      package: package_id,
+      recurring_type,
+      price_id,
+      subscription_id: subscriptionId
+    };
+
+    const updateCompany = await updateCompanyById(company._id, body, session);
+
+    if (!updateCompany) {
+      throw createError(500, "Failed to update company info");
+    }
+    return updateCompany;
+
+  } catch (error) {
     throw error;
   }
 };
@@ -130,6 +185,7 @@ const saveSubscriptionInfoService = async (
       package: package_id,
       recurring_type: recurringType,
       price_id: priceId,
+      subscription_id: subscriptionId
     };
 
     const updateCompany = await updateCompanyById(companyId, body, session);
@@ -559,4 +615,5 @@ module.exports = {
   billingPortalService,
   saveSubscriptionInfoService,
   handleWebhookEvent,
+  upgradeStripeSubscriptionService
 };

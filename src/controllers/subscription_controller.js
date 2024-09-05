@@ -1,6 +1,7 @@
 const {
   getPriceService,
   createStripeSubscriptionService,
+  upgradeStripeSubscriptionService,
   getSubscriptionStatusService,
   billingPortalService,
   saveSubscriptionInfoService,
@@ -53,6 +54,42 @@ const createStripeSubscription = async (req, res, next) => {
       return res.status(200).json({ message: "Free subscription created successfully" });
     }
     const stripeSession = await createStripeSubscriptionService(
+      price_id,
+      id,
+      package_id,
+      recurring_type,
+      session
+    );
+    if (!stripeSession) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(500, "Failed to create stripe subscription"));
+    }
+    await session.commitTransaction();
+    session.endSession();
+    res
+      .status(200)
+      .json({ message: "generate checkout URL successfully", stripeSession });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+const updateStripeSubscription = async (req, res, next) => {
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+    const { id } = req.user;
+    const { price_id, package_id, recurring_type } = req.body;
+    if (!price_id || !package_id) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "price id and package_id must be provided"));
+    }
+    const stripeSession = await upgradeStripeSubscriptionService(
       price_id,
       id,
       package_id,
@@ -211,4 +248,5 @@ module.exports = {
   billingPortalUrl,
   saveSubscriptonInfo,
   handleWebhook,
+  updateStripeSubscription
 };

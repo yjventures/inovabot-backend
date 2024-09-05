@@ -11,6 +11,8 @@ router.get(apiEnum.GET_ALL, subscriptionController.getAllPrice);
 // ? API to get the subscription checkout url
 router.post(apiEnum.CREATE,authenticateToken, subscriptionController.createStripeSubscription);
 
+router.post("/update",authenticateToken, subscriptionController.updateStripeSubscription);
+
 // ? API to get all stripe subscription info
 router.get(
   apiEnum.STRIPE_SUBSCRIPTION_INFO,
