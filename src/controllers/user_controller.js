@@ -342,7 +342,7 @@ const changeUserRoleByID = async (req, res, next) => {
     } else {
       body.type = role_name;
     }
-    const user = await updateUserByID(user_id, body, session);
+    const user = await updateUserById(user_id, body, session);
     await session.commitTransaction();
     session.endSession();
     res.status(200).json({ message: "success", user, role });
