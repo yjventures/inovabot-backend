@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Bot = require("../models/bot");
+const Link = require("../models/link"); // Cannot be used as example
 const { createError } = require("../common/error");
 const {
   createAssistant,
@@ -12,7 +13,12 @@ const {
   addFileInVectorStore,
   deleteFileInVectorStore,
 } = require("../utils/open_ai_utils");
-const { addFile, getFile, deleteFile, checkMemory } = require("../services/file_services");
+const {
+  addFile,
+  getFile,
+  deleteFile,
+  checkMemory,
+} = require("../services/file_services");
 const { incrementInCompany } = require("../services/company_services");
 const { convertToBytes } = require("../utils/file_utils");
 
@@ -51,12 +57,13 @@ const createBotInstructions = (req) => {
       instruction += `\n\nYou sound like:\n${req.body.sounds_like}`;
     }
     if (req?.body?.links && req?.body?.links?.length > 0) {
-      instruction += `\n\nYou will use these links like:\n`;
+      instruction += `\n\nUse these links to return an <iframe> html component, no extra text or instruction needed, it will start from the text 'Start:' and end with the text ':End':\nStart:\n`;
       for (let item of req.body.links) {
-        instruction += `${item.objective}: ${item.link}`;
+        instruction += `\n${item.objective}: ${item.link}\n`;
       }
+      instruction += `\n:End`;
     }
-    instruction += `\n\nIgnore any empty fiends in your instructions.\n\nYou will respond in clean, proper HTML so the application can render it straight away. Normal text will be wrapped in a <p> tag. You will format the links as html links with an <a> tag. Links will have yellow font. Use divs and headings to properly separate different sections. Make sure text doesn't overlap and there is adequate line spacing.`;
+    instruction += `\n\nYou will respond in clean, proper HTML so the application can render it straight away. Normal text will be wrapped in a <p> tag. You will format the links as html links with an <a> tag. Links will have yellow font. Use divs and headings to properly separate different sections. Make sure text doesn't overlap and there is adequate line spacing. You will only output pure HTML. No markdown. All answers, titles, lists, headers, paragraphs - reply in fully styled HTML as the app will render and parse your responses as you reply.`;
     return instruction;
   } catch (err) {
     throw err;
@@ -145,9 +152,14 @@ const createBot = async (botObj, session) => {
     const botCollection = await new Bot(botObj);
     const bot = await botCollection.save({ session });
     if (bot) {
-      const company = await incrementInCompany(bot.company_id, 'bots', 1, session);
+      const company = await incrementInCompany(
+        bot.company_id,
+        "bots",
+        1,
+        session
+      );
       if (!company) {
-        throw createError(400, "Company couldn't response");  
+        throw createError(400, "Company couldn't response");
       }
       return bot;
     } else {
@@ -243,6 +255,10 @@ const findBotByUrl = async (embedding_url, session) => {
 const updateBotById = async (id, body, session) => {
   try {
     const bot = await findBotById(id, session);
+    const links = await Link.find({ bot_id: bot._id}).session(session).lean();
+    if (links && links.length > 0) {
+      body.links = links;
+    }
     for (let item in body) {
       if (item === "recurring_date") {
         const date = new Date(body[item]);
@@ -256,9 +272,6 @@ const updateBotById = async (id, body, session) => {
     const req = { body: bot };
     bot.instructions = createBotInstructions(req);
     const tools = [
-      {
-        type: "code_interpreter",
-      },
       {
         type: "file_search",
       },
@@ -329,9 +342,16 @@ const addFileToBot = async (id, file_path, file, package, session) => {
     if (!package) {
       throw createError(400, "Package not found");
     }
-    const storageSize = await checkMemory(bot.company_id, Number(file.size), session);
+    const storageSize = await checkMemory(
+      bot.company_id,
+      Number(file.size),
+      session
+    );
     if (convertToBytes(package["total_file_storage"]) <= storageSize) {
-      throw createError(400, "Maximum storage exceeded, upgrade package to get more storage");
+      throw createError(
+        400,
+        "Maximum storage exceeded, upgrade package to get more storage"
+      );
     }
     const myVectorStoreFile = await addFileInVectorStore(
       bot.vector_store_id,
@@ -372,7 +392,7 @@ const deleteFileFromBot = async (bot_id, file_id, session) => {
 // & Function to count bot opened by company
 const countBot = async (company_id, session) => {
   try {
-    const count = await Bot.countDocuments({company_id}, {session});
+    const count = await Bot.countDocuments({ company_id }, { session });
     return count;
   } catch (err) {
     throw err;
