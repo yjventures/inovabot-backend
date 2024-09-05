@@ -32,12 +32,14 @@ const createStripeSubscriptionService = async (
   price_id,
   user_id,
   package_id,
+  recurring_type,
   session
 ) => {
   try {
+    console.log("user id", user_id)
     const company = await findCompanyByObject({ user_id }, session);
     if (!company) {
-      return next(createError(404, "Company not found"));
+      throw createError(404, "Company not found");
     }
     const stripe_customer_id = company?.stripe_customer_id;
 
@@ -49,6 +51,7 @@ const createStripeSubscriptionService = async (
       price_id,
       stripe_customer_id,
       user_id,
+      recurring_type,
       package_id,
     );
 
@@ -87,6 +90,8 @@ const saveSubscriptionInfoService = async (
   session,
   start_period,
   end_period,
+  recurringType,
+  priceId,
   subscriptionId
 ) => {
   try {
@@ -121,7 +126,10 @@ const saveSubscriptionInfoService = async (
     const body = {
       last_subscribed,
       expires_at,
-      payment_status: true
+      payment_status: true,
+      package: package_id,
+      recurring_type: recurringType,
+      price_id: priceId,
     };
 
     const updateCompany = await updateCompanyById(companyId, body, session);
@@ -143,6 +151,7 @@ const updateSubscriptionInfoService = async (
   start_period,
   end_period,
   planId,
+  recurringType,
   subscriptionId
 ) => {
   try {
@@ -205,6 +214,8 @@ const updateSubscriptionInfoService = async (
       last_subscribed,
       expires_at,
       payment_status: true,
+      package: package._id,
+      recurring_type: recurringType,
     };
 
     console.log("Body:", body);
@@ -268,6 +279,8 @@ const handleCheckoutSessionCompleted = async (eventSession) => {
     const packageId = eventSession.metadata.package_id;
     const startPeriod = eventSession.current_period_start;
     const endPeriod = eventSession.current_period_end;
+    const recurringType = eventSession.metadata.recurring_type;
+    const priceId = eventSession.metadata.price_id;
 
     console.log("User ID:", userId);
     console.log("Package ID:", packageId);
@@ -281,6 +294,8 @@ const handleCheckoutSessionCompleted = async (eventSession) => {
       session, // Pass the session to the service function
       startPeriod,
       endPeriod,
+      recurringType,
+      priceId,
       subscriptionId
     );
 
@@ -387,6 +402,7 @@ const handleUpdateSessionCompleted = async (eventSession) => {
       const packageId = eventSession?.metadata?.package_id;
       const startPeriod = subscription?.current_period_start;
       const endPeriod = subscription?.current_period_end;
+      const recurringType = eventSession?.metadata?.recurring_type;
 
       const result = await updateSubscriptionInfoService(
         userId,
@@ -394,6 +410,7 @@ const handleUpdateSessionCompleted = async (eventSession) => {
         startPeriod,
         endPeriod,
         planId,
+        recurringType,
         subscriptionId
       );
       console.log("updateSubscriptionInfoService Result:", result);

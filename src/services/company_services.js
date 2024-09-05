@@ -4,6 +4,7 @@ const { createError } = require("../common/error");
 const { createStripeCustomer } = require("../utils/stripe_utils");
 const { findUserById, updateUserById } = require("../services/user_services");
 const { employeeType } = require("../utils/enums");
+const Package = require("../models/package");
 
 // & Function to create a new company
 const createCompany = async (companyObj, session) => {
@@ -94,7 +95,7 @@ const getCompanyListWithoutQuery = async (req, session) => {
     const companies = await Company.find(query).session(session);
     const count = await Company.countDocuments(query, { session });
     return {
-      data: companies.map(company => ({
+      data: companies.map((company) => ({
         _id: company._id,
         name: company.name,
       })),
@@ -142,7 +143,8 @@ const updateCompanyById = async (id, body, session) => {
         const date = new Date(body[item]);
         query[item] = date;
       } else if (item === "user_id" || item === "package") {
-        if (mongoose.Types.ObjectId.isValid(body[item])) { // Validate ObjectId
+        if (mongoose.Types.ObjectId.isValid(body[item])) {
+          // Validate ObjectId
           query[item] = new mongoose.Types.ObjectId(body[item]);
         } else {
           if (item === "user_id") {
@@ -215,6 +217,56 @@ const findCompanyByObject = async (object, session) => {
   }
 };
 
+const findSubscriptionByCompanyId = async (company_id, session) => {
+  try {
+    // Fetch subscription by company ID
+    const subscription = await Company.findById(company_id)
+      .session(session)
+      .lean();
+    const packageId = subscription.package;
+
+    // Fetch package information
+    const packageInfo = await Package.findById(packageId).lean();
+    if (!packageInfo) {
+      throw createError(404, "Package not found");
+    }
+
+    // Extract price_id from subscription
+    const priceId = subscription.price_id;
+
+    // Check for matching stripe_id in package's monthly or yearly price
+    const monthlyMatch = priceId === packageInfo.monthly?.stripe_id;
+    const yearlyMatch = priceId === packageInfo.yearly?.stripe_id;
+
+    if (monthlyMatch) {
+      // Return the full package info along with only the matching monthly price details
+      return {
+        subscription_id: packageInfo._id,
+        name: packageInfo.name,
+        description: packageInfo.description,
+        features: packageInfo.features,
+        monthly: packageInfo.monthly, // Show only the monthly price
+      };
+    } else if (yearlyMatch) {
+      // Return the full package info along with only the matching yearly price details
+      return {
+        subscription_id: packageInfo._id,
+        name: packageInfo.name,
+        description: packageInfo.description,
+        features: packageInfo.features,
+        yearly: packageInfo.yearly, // Show only the yearly price
+      };
+    } else {
+      throw createError(
+        404,
+        "Price ID does not match any Stripe ID in the package"
+      );
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createCompany,
   getCompanyUsingQureystring,
@@ -224,4 +276,5 @@ module.exports = {
   findCompanyByObject,
   incrementInCompany,
   getCompanyListWithoutQuery,
+  findSubscriptionByCompanyId,
 };

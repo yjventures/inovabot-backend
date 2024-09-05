@@ -68,4 +68,9 @@ router.post(
   companyController.getStorage
 );
 
+router.get(
+  apiEnum.STRIPE_SUBSCRIPTION_INFO,
+  companyController.getSubscriptionInfoFromCompany
+)
+
 module.exports = router;
