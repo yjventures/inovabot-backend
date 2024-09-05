@@ -45,13 +45,13 @@ const create = async (req, res, next) => {
     }
     if (
       req?.user?.type === userType.RESELLER &&
-      company?.reseller_id.toString() !== user_id.toString()
+      company?.reseller_id.toString() !== req.user.id.toString()
     ) {
       return next(createError(404, "Permission denied"));
     }
     if (
       req?.user?.type === userType.COMPANY_ADMIN &&
-      company?.user_id.toString() !== user_id.toString()
+      company?.user_id.toString() !== req.user.id.toString()
     ) {
       return next(createError(404, "Permission denied"));
     }
