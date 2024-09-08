@@ -83,8 +83,8 @@ const createParam = (botObj) => {
     if (botObj.top_p) {
       botBody.top_p = botObj.top_p;
     }
-    if (botObj.temparature) {
-      botBody.temparature = botObj.temparature;
+    if (botObj.temperature) {
+      botBody.temperature = botObj.temperature;
     }
     if (botObj.description) {
       botBody.description = botObj.description;
@@ -94,6 +94,9 @@ const createParam = (botObj) => {
     }
     if (botObj.tool_resources) {
       botBody.tool_resources = botObj.tool_resources;
+    }
+    if (botObj.frequency_penalty) {
+      botBody.frequency_penalty = botObj.frequency_penalty;
     }
     return botBody;
   } catch (err) {
@@ -105,9 +108,6 @@ const createParam = (botObj) => {
 const createBot = async (botObj, session) => {
   try {
     const tools = [
-      {
-        type: "code_interpreter",
-      },
       {
         type: "file_search",
       },
