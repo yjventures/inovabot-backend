@@ -90,7 +90,7 @@ const botSchema = mongoose.Schema(
     },
     model: {
       type: String,
-      default: 'gpt-4-turbo',
+      default: 'gpt-4o',
     },
     temperature: {
       type: Number,
@@ -108,7 +108,7 @@ const botSchema = mongoose.Schema(
       type: Number,
       default: 0.5,
     },
-    frequently_penalty: {
+    frequency_penalty: {
       type: Number,
       default: 0.5,
     },
