@@ -6,6 +6,7 @@ const {
   billingPortalService,
   saveSubscriptionInfoService,
   handleWebhookEvent,
+  cancelStripeSubscriptionService
 } = require("../services/subscription_services");
 const mongoose = require("mongoose");
 const { createError } = require("../common/error");
@@ -39,7 +40,9 @@ const createStripeSubscription = async (req, res, next) => {
     const package = await findPackageById(package_id, session);
     if (Number(package.price.monthly.price) === 0) {
       if (!req?.body?.user_id) {
-        return next(createError(400, "user_id must be provided for free package"));
+        return next(
+          createError(400, "user_id must be provided for free package")
+        );
       }
       const today = new Date();
       const subscriptionInfo = await saveSubscriptionInfoService(
@@ -47,11 +50,13 @@ const createStripeSubscription = async (req, res, next) => {
         package_id,
         session,
         today,
-        today.setFullYear(today.getFullYear() + 100),
+        today.setFullYear(today.getFullYear() + 100)
       );
       await session.commitTransaction();
       session.endSession();
-      return res.status(200).json({ message: "Free subscription created successfully" });
+      return res
+        .status(200)
+        .json({ message: "Free subscription created successfully" });
     }
     const stripeSession = await createStripeSubscriptionService(
       price_id,
@@ -97,6 +102,30 @@ const updateStripeSubscription = async (req, res, next) => {
       session
     );
     if (!stripeSession) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(500, "Failed to create stripe subscription"));
+    }
+    await session.commitTransaction();
+    session.endSession();
+    res
+      .status(200)
+      .json({ message: "generate checkout URL successfully", stripeSession });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+const cancelStripeSubscription = async (req, res, next) => {
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+    const { id } = req.user;
+    const cancelStripeSession = await cancelStripeSubscriptionService(id,session);
+    if (!cancelStripeSession) {
       await session.abortTransaction();
       session.endSession();
       return next(createError(500, "Failed to create stripe subscription"));
@@ -248,5 +277,6 @@ module.exports = {
   billingPortalUrl,
   saveSubscriptonInfo,
   handleWebhook,
-  updateStripeSubscription
+  updateStripeSubscription,
+  cancelStripeSubscription,
 };

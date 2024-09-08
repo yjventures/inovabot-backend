@@ -36,7 +36,7 @@ const uploadImage = async (req, res) => {
 
     await s3Client.send(new PutObjectCommand(bucketParams));
 
-    const fileUrl = `http://rfqbucket.s3-website-ap-southeast-2.amazonaws.com/${key}.${fileExtension}`;
+    const fileUrl = `${process.env.S3_BUCKET_URL}/${key}.${fileExtension}`;
 
     res.status(200).json({ status: 'success', uploadedUrl: fileUrl });
   } catch (err) {
