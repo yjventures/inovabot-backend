@@ -340,7 +340,7 @@ const user = {
   [serviceName.USER_SERVICE]: {
     [apiEnum.REQUEST_SIGNUP]: true,
     [apiEnum.SIGNUP]: true,
-    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_ALL]: true,
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
@@ -409,7 +409,7 @@ const editor = {
   [serviceName.USER_SERVICE]: {
     [apiEnum.REQUEST_SIGNUP]: true,
     [apiEnum.SIGNUP]: true,
-    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_ALL]: true,
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
@@ -478,7 +478,7 @@ const viewer = {
   [serviceName.USER_SERVICE]: {
     [apiEnum.REQUEST_SIGNUP]: true,
     [apiEnum.SIGNUP]: true,
-    [apiEnum.GET_ALL]: false,
+    [apiEnum.GET_ALL]: true,
     [apiEnum.GET_BY_ID]: true,
     [apiEnum.UPDATE_BY_ID]: true,
     [apiEnum.DELETE_BY_ID]: true,
