@@ -66,6 +66,12 @@ router.put(
   userController.changeUserRoleByID
 );
 
+router.put(
+  apiEnum.UPDATE,
+  authenticateToken,
+  userController.updateUserSelfInfo
+);
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 router.post(apiEnum.UPLOAD, upload.single("file"), uploadImage);
