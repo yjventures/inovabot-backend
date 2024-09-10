@@ -159,7 +159,7 @@ const botSchema = mongoose.Schema(
     },
     language: {
       type: String,
-      enum: ["en", "ac"],
+      enum: ["en", "ar"],
       default: "en",
     },
     dark_mode: {

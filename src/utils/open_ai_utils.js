@@ -168,17 +168,18 @@ const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter) => {
         content: mainPrompt,
       }
     );
-    const eventHandler = new EventHandler(openai, eventEmitter);
-    eventHandler.on("event", eventHandler.onEvent.bind(eventHandler));
+    // const eventHandler = new EventHandler(openai, eventEmitter);
+    // eventHandler.on("event", eventHandler.onEvent.bind(eventHandler));
     const run = openai.beta.threads.runs.stream (
       thread_id,
       {
         assistant_id,
+        stream: true
       },
-      eventHandler,
+      // eventHandler,
     );
     for await (const event of run) {
-      eventHandler.emit("event", event);
+      eventEmitter.emit("event", event);
     }
   } catch (err) {
     throw err;
