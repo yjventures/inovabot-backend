@@ -42,7 +42,10 @@ const getLinkUsingQureystring = async (req, session) => {
         query.name = { $regex: regex };
       } else if (item === "sortBy") {
         sortBy = req?.query?.sortBy;
-      } else {
+      } else if (item === "bot_id") {
+        query[item] = new mongoose.Types.ObjectId(req?.query[item]);
+      } 
+      else {
         query[item] = req?.query[item];
       }
     }

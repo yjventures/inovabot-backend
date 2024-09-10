@@ -85,7 +85,7 @@ const templateSchema = mongoose.Schema(
     },
     language: {
       type: String,
-      enum: ["en", "ac"],
+      enum: ["en", "ar"],
       default: "en",
     },
     category: {

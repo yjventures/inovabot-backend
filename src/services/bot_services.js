@@ -56,12 +56,17 @@ const createBotInstructions = (req) => {
     if (req?.body?.sounds_like) {
       instruction += `\n\nYou sound like:\n${req.body.sounds_like}`;
     }
-    if (req?.body?.links && req?.body?.links?.length > 0) {
-      instruction += `\n\nUse these links to return an <iframe> html component, no extra text or instruction needed, it will start from the text 'Start:' and end with the text ':End':\nStart:\n`;
-      for (let item of req.body.links) {
-        instruction += `\n${item.objective}: ${item.link}\n`;
+    if (req?.body?.language) {
+      if (req.body.language === "ar") {
+        instruction += `\n\nYou will only respond in Arabic language even if the question is in a different language. All replies must be in Arabic.`;
+      } else {
+        instruction += `\n\nYou will only respond in English language even if the question is in a different language. All replies must be in English.`;
       }
-      instruction += `\n:End`;
+    }
+    if (req?.body?.links && req?.body?.links?.length > 0) {
+      for (let item of req.body.links) {
+        instruction += `\n\nDisplay ${item.link} in a responsive iframe when ${item.objective}\n`;
+      }
     }
     instruction += `\n\nYou will respond in clean, proper HTML so the application can render it straight away. Normal text will be wrapped in a <p> tag. You will format the links as html links with an <a> tag. Links will have yellow font. Use divs and headings to properly separate different sections. Make sure text doesn't overlap and there is adequate line spacing. You will only output pure HTML. No markdown. All answers, titles, lists, headers, paragraphs - reply in fully styled HTML as the app will render and parse your responses as you reply.`;
     return instruction;
@@ -77,26 +82,23 @@ const createParam = (botObj) => {
     botBody.name = botObj.name;
     botBody.instructions = botObj.instructions;
     botBody.model = botObj.model;
-    if (botObj.tools) {
+    if (botObj?.tools) {
       botBody.tools = botObj.tools;
     }
-    if (botObj.top_p) {
+    if (botObj?.top_p) {
       botBody.top_p = botObj.top_p;
     }
-    if (botObj.temperature) {
+    if (botObj?.temperature) {
       botBody.temperature = botObj.temperature;
     }
-    if (botObj.description) {
+    if (botObj?.description) {
       botBody.description = botObj.description;
     }
-    if (botObj.max_tokens) {
+    if (botObj?.max_tokens) {
       botBody.max_tokens = botObj.max_token;
     }
-    if (botObj.tool_resources) {
+    if (botObj?.tool_resources) {
       botBody.tool_resources = botObj.tool_resources;
-    }
-    if (botObj.frequency_penalty) {
-      botBody.frequency_penalty = botObj.frequency_penalty;
     }
     return botBody;
   } catch (err) {
@@ -255,7 +257,7 @@ const findBotByUrl = async (embedding_url, session) => {
 const updateBotById = async (id, body, session) => {
   try {
     const bot = await findBotById(id, session);
-    const links = await Link.find({ bot_id: bot._id}).session(session).lean();
+    const links = await Link.find({ bot_id: bot._id }).session(session).lean();
     if (links && links.length > 0) {
       body.links = links;
     }
