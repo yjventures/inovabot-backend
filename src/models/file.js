@@ -30,7 +30,11 @@ const fileSchema = mongoose.Schema(
     url: {
       type: String,
       default: '',
-    }
+    },
+    expireAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

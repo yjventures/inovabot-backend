@@ -13,7 +13,7 @@ const apiEnum = {
   UPDATE_ROLE: '/update-role',
   FORGET_PASSWORD: '/forget-password', 
   RESET_PASSWORD: '/reset-password',
-  CHECK_PASSWORD: "/check-password",
+  CHECK_PASSWORD: '/check-password',
   VERIFY: '/verify-otp',
   STRIPE_SUBSCRIPTION_INFO: '/subscription-info',
   STRIPE_BILLING_PORTAL: '/subscription-billing-portal',
