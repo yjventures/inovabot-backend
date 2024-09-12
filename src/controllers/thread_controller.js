@@ -9,6 +9,7 @@ const {
   runThreadById,
   addFileToThread,
   deleteFileFromThread,
+  stopRun,
 } = require("../services/thread_services");
 const { createError } = require("../common/error");
 
@@ -93,13 +94,19 @@ const runThreadByID = async (req, res, next) => {
     res.sseSetup();
     const eventEmitter = new EventEmitter();
     let streamClosed = false;
+    let run_id = null;
 
     eventEmitter.on("event", (data) => {
       if (streamClosed) {
         return;
       }
-      if (data.event === "thread.message.delta") {
-        res.sseSend(data.data.delta.content[0].text.value);
+      if (data.event === "thread.run.created") {
+        run_id = data.data.id;
+      } else if (data.event === "thread.message.delta") {
+        res.sseSend({
+          id: run_id,
+          chunk: data.data.delta.content[0].text.value
+        });
       } else if (data.event === "thread.run.completed") {
         res.sseStop();
         streamClosed = true;
@@ -113,6 +120,35 @@ const runThreadByID = async (req, res, next) => {
     const result = await runThreadById(req?.body?.thread_id, req?.body?.message, eventEmitter, session);
     await session.commitTransaction();
     session.endSession();
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+// * Function to stop a run using id
+const stopRunById = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const thread_id = req?.body?.thread_id;
+    if (!thread_id) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "Thread Id Not Provided"));
+    }
+    const thread = await getThreadById(thread_id, session);
+    const run_id = req?.body?.run_id;
+    if (!run_id) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "Run Id Not Provided"));
+    }
+    await stopRun(thread.thread_id, run_id);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ message: "success" });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -187,4 +223,5 @@ module.exports = {
   runThreadByID,
   uploadFileToThread,
   deleteFileFromThreadByID,
+  stopRunById,
 }

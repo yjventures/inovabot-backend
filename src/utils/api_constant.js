@@ -21,6 +21,7 @@ const apiEnum = {
   WEBHOOK: '/webhook',
   GET_THREAD: '/get-thread',
   RUN_THREAD_BY_ID: '/run/:id',
+  STOP_THREAD: '/stop-thread',
   GET_MESSAGE_LIST_BY_ID: '/messages/:id',
   UPLOAD: '/upload',
   DELETE_FILE: '/delete-file',

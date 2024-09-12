@@ -10,6 +10,7 @@ const {
   getThread,
   addFileInVectorStore,
   deleteFileInVectorStore,
+  stopRunThread,
 } = require("../utils/open_ai_utils");
 const { findBotById } = require("../services/bot_services");
 const { addFile, getFile, deleteFile } = require("../services/file_services");
@@ -132,6 +133,15 @@ const runThreadById = async (id, message, eventEmitter, session) => {
   }
 };
 
+// & Function to stop a run by open ai id
+const stopRun = async (thread_id, run_id) => {
+  try {
+    await stopRunThread(thread_id, run_id);
+  } catch (err) {
+    throw err;
+  }
+};
+
 // & Upload file in thread by ID
 const addFileToThread = async (id, file_path, file, session) => {
   try {
@@ -184,6 +194,7 @@ module.exports = {
   runThreadById,
   addFileToThread,
   deleteFileFromThread,
+  stopRun,
 };
 
 // vs_EKBu7DPE3az7pdOn2wlvIdBv

@@ -170,7 +170,7 @@ const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter) => {
     );
     // const eventHandler = new EventHandler(openai, eventEmitter);
     // eventHandler.on("event", eventHandler.onEvent.bind(eventHandler));
-    const run = openai.beta.threads.runs.stream (
+    const run = await openai.beta.threads.runs.create (
       thread_id,
       {
         assistant_id,
@@ -181,6 +181,18 @@ const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter) => {
     for await (const event of run) {
       eventEmitter.emit("event", event);
     }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// ^ Function to stop stream from a run
+const stopRunThread = async (thread_id, run_id) => {
+  try {
+    const run = await openai.beta.threads.runs.cancel(
+      thread_id,
+      run_id
+    );
   } catch (err) {
     throw err;
   }
@@ -308,6 +320,7 @@ module.exports = {
   transcriptAudio,
   translateAudio,
   createAudioFromText,
+  stopRunThread,
 };
 
 // * Here is a template for the tools
