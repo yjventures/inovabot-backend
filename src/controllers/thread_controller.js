@@ -126,10 +126,14 @@ const uploadFileToThread = async (req, res, next) => {
   try {
     session.startTransaction();
     if (!req.file) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "File not uploaded"));
     }
     const fileLocation = process.env.BULK_FILE_LOCATION;
     if (!fileLocation) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "env for file location is missing"));
     }
     const fullPath = path.join(
@@ -138,13 +142,11 @@ const uploadFileToThread = async (req, res, next) => {
     );
     const thread_id = req?.body?.thread_id;
     if (!thread_id) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "thread_id not provided"));
     }
-    const package = req?.body?.package;
-    if (!package) {
-      return next(createError(400, "Package not found"));
-    }
-    const file = await addFileToThread(thread_id, fullPath, req.file, package, session);
+    const file = await addFileToThread(thread_id, fullPath, req.file, session);
     fs.unlinkSync(fullPath);
     await session.commitTransaction();
     session.endSession();
@@ -164,6 +166,8 @@ const deleteFileFromThreadByID = async (req, res, next) => {
     const thread_id = req?.body?.thread_id;
     const file_id = req?.body?.file_id;
     if (!thread_id || !file_id) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "Both thread_id and file_id need to be provided"));
     }
     const message = await deleteFileFromThread(thread_id, file_id, session);

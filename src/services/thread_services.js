@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Thread = require("../models/thread");
+const File = require("../models/file");
+const cron = require('node-cron');
 const { createError } = require("../common/error");
 const {
   createThread,
@@ -11,6 +13,30 @@ const {
 } = require("../utils/open_ai_utils");
 const { findBotById } = require("../services/bot_services");
 const { addFile, getFile, deleteFile } = require("../services/file_services");
+
+require('dotenv').config();
+
+// & Schedule the job to run every minute
+cron.schedule('* * * * *', async () => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const now = new Date();
+    const expiredFiles = await File.find({
+      expireAt: { $lt: now }
+    }).session(session);
+
+    for (const file of expiredFiles) {
+      await deleteFileFromThread(file.thread_id, file._id, session);
+    }
+    await session.commitTransaction();
+    session.endSession();
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error('Error during the cron job:', err);
+  }
+});
 
 // & Function to create a new thread
 const createAThread = async (body, session) => {
@@ -107,7 +133,7 @@ const runThreadById = async (id, message, eventEmitter, session) => {
 };
 
 // & Upload file in thread by ID
-const addFileToThread = async (id, file_path, file, package, session) => {
+const addFileToThread = async (id, file_path, file, session) => {
   try {
     const thread = await getThreadById(id, session);
     const bot = await findBotById(thread.bot_id, session);
@@ -119,6 +145,8 @@ const addFileToThread = async (id, file_path, file, package, session) => {
     if (!file_id) {
       throw createError(400, "File not created in open-ai");
     } else {
+      const minutes = process.env.FILE_DELETION_TIME || "30";
+      const expireAt = new Date(Date.now() + (Number(minutes) * 60 * 1000));
       const fileObj = {
         name: file.originalname,
         size: file.size,
@@ -126,8 +154,9 @@ const addFileToThread = async (id, file_path, file, package, session) => {
         company_id: bot.company_id,
         bot_id: bot._id,
         thread_id: id,
+        expireAt,
       };
-      const newFile = await addFile(fileObj, package, session);
+      const newFile = await addFile(fileObj, session);
       return newFile;
     }
   } catch (err) {

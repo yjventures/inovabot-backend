@@ -20,9 +20,9 @@ router.post(apiEnum.RUN_THREAD_BY_ID, threadController.runThreadByID);
 // ? API to upload a file to a thread
 router.post(
   apiEnum.UPLOAD,
-  authenticateToken,
+  // authenticateToken,
   upload.single("file"),
-  packageFeature,
+  // packageFeature,
   threadController.uploadFileToThread
 );
 
