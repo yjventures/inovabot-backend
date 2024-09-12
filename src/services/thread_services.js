@@ -21,20 +21,16 @@ cron.schedule('* * * * *', async () => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    console.log('Running a job to delete documents after 30 minutes...');
     const now = new Date();
     const expiredFiles = await File.find({
       expireAt: { $lt: now }
     }).session(session);
 
     for (const file of expiredFiles) {
-      console.log(`Deleting file with _id ${file._id} and name ${file.name}...`);
       await deleteFileFromThread(file.thread_id, file._id, session);
-      console.log('Deleted');
     }
     await session.commitTransaction();
     session.endSession();
-    console.log('Finished');
   } catch (err) {
     await session.abortTransaction();
     session.endSession();

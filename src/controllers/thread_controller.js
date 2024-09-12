@@ -146,12 +146,6 @@ const uploadFileToThread = async (req, res, next) => {
       session.endSession();
       return next(createError(400, "thread_id not provided"));
     }
-    // const package = req?.body?.package;
-    // if (!package) {
-    //   await session.abortTransaction();
-    //   session.endSession();
-    //   return next(createError(400, "Package not found"));
-    // }
     const file = await addFileToThread(thread_id, fullPath, req.file, session);
     fs.unlinkSync(fullPath);
     await session.commitTransaction();
