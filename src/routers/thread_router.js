@@ -17,6 +17,9 @@ router.get(apiEnum.GET_MESSAGE_LIST_BY_ID, threadController.getMessageListByID);
 // ? API to run thread by ID
 router.post(apiEnum.RUN_THREAD_BY_ID, threadController.runThreadByID);
 
+// ? API to stop run by id
+router.post(apiEnum.STOP_THREAD, threadController.stopRunById);
+
 // ? API to upload a file to a thread
 router.post(
   apiEnum.UPLOAD,
