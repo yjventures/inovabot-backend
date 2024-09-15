@@ -42,11 +42,11 @@ const botSchema = mongoose.Schema(
     },
     bg_light: {
       type: String,
-      default: 'https://rfqbucket.s3.ap-southeast-2.amazonaws.com/lbg1.jpeg',
+      default: 'https://s3.ap-southeast-2.amazonaws.com/rfqbucketlbg1.jpeg',
     },
     bg_dark: {
       type: String,
-      default: 'https://rfqbucket.s3.ap-southeast-2.amazonaws.com/dbg1.jpeg',
+      default: 'https://s3.ap-southeast-2.amazonaws.com/rfqbucketdbg1.jpeg',
     },
     description: {
       type: String,
