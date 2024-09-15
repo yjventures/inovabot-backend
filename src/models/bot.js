@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const botSchema = mongoose.Schema(
   {
@@ -42,11 +43,11 @@ const botSchema = mongoose.Schema(
     },
     bg_light: {
       type: String,
-      default: 'https://s3.ap-southeast-2.amazonaws.com/rfqbucket/lbg1.jpeg',
+      default: `${process.env.S3_BUCKET_URL}/lbg1.jpeg`,
     },
     bg_dark: {
       type: String,
-      default: 'https://s3.ap-southeast-2.amazonaws.com/rfqbucket/dbg1.jpeg',
+      default: `${process.env.S3_BUCKET_URL}/dbg1.jpeg`,
     },
     description: {
       type: String,
