@@ -2,6 +2,7 @@ const express = require("express");
 const { body } = require("express-validator");
 const apiEnum = require("../utils/api_constant");
 const templateController = require("../controllers/template_controller");
+const { process_query } = require("../middlewares/process_query");
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.post(apiEnum.CREATE,
   templateController.create);
 
 // ? API to Get all templates using querystring
-router.get(apiEnum.GET_ALL, templateController.getAllTemplates);
+router.get(apiEnum.GET_ALL, process_query, templateController.getAllTemplates);
 
 // ? API to Get a template by ID
 router.get(apiEnum.GET_BY_ID, templateController.getTemplateByID);
