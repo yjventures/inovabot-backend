@@ -11,7 +11,11 @@ const templateSchema = mongoose.Schema(
       type: String,
       default: '',
     },
-    logo: {
+    logo_light: {
+      type: String,
+      default: '',
+    },
+    logo_dark: {
       type: String,
       default: '',
     },
