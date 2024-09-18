@@ -5,6 +5,7 @@ const {
   findUserByObject,
   createUser,
   getUsers,
+  getUsersForReseller,
   updateUserById,
   deleteUserById,
   changeUserRolebyId,
@@ -18,7 +19,7 @@ const {
   generateVerificationLink,
   decryptLink,
 } = require("../utils/registration_utils");
-const { precidency } = require("../utils/roles");
+const { precidency, user } = require("../utils/roles");
 
 // TODO: Add API to invite an user in a company using company_id
 
@@ -142,14 +143,16 @@ const getAllUser = async (req, res, next) => {
     if (!user_id) {
       throw createError(404, "User not found");
     }
-    if (req?.user?.type === userType.RESELLER) {
-      throw createError(400, "Reseller can't get access");
-    }
     if (req?.user?.type === userType.COMPANY_ADMIN) {
       const user = await findUserById(user_id);
       req.query.company_id = user.company_id;
     }
-    const users = await getUsers(req, session);
+    let users = null;
+    if (req?.user?.type === userType.RESELLER) {
+      users = await getUsersForReseller(req, session);
+    } else {
+      users = await getUsers(req, session);
+    }
     if (users) {
       await session.commitTransaction();
       session.endSession();
