@@ -29,11 +29,13 @@ const apiEnum = {
   INVITE_ADMIN: '/invite-admin',
   INVITE_USER: '/invite-user',
   INVITE_RESELLER: '/invite-reseller',
-  ANALYTICS_TOTAL_DATA: '/total-data',
+  ANALYTICS_TOTAL_DATA: '/analytics',
   INVITE_COMPANY_ADMIN: '/invite-company-admin',
   GET_STORAGE: '/get-storage',
   UPGRADE_DOWNGRADE_SUBSCRIPTION: '/update',
-  CANCEL_SUBSCRIPTION: '/cancel'
+  CANCEL_SUBSCRIPTION: '/cancel',
+  TOTAL_INCOME: '/total-income',
+  DASHBOARD_SEARCH: '/dashboard-search'
 };
 
 module.exports = apiEnum;

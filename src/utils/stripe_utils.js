@@ -94,11 +94,15 @@ const createStripeCustomer = async (email) => {
 const subscriptionSession = async (
   priceId,
   stripeCustomerId,
-  userId,
+  company_id,
   recurring_type,
-  packageId
+  packageId,
+  // isReseller // Add isReseller flag here
 ) => {
   try {
+    // Conditionally add trial_period_days based on whether the user is a reseller or not
+    // const trialPeriod = isReseller ? 0 : 14; // 0 days trial for resellers, 14 days trial for non-resellers
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -108,30 +112,28 @@ const subscriptionSession = async (
           quantity: 1,
         },
       ],
-      customer: stripeCustomerId, // customer: "cus_PgjmeMfjbx7SmI",
+      customer: stripeCustomerId,
       success_url: process.env.STRIPE_SUCCESS_URL,
       cancel_url: process.env.STRIPE_CANCEL_URL,
-      // metadata: {
-      //   user_id: userId,
-      //   package_id: packageId,
-      // },
       subscription_data: {
-        trial_period_days: 14,
+        trial_period_days: process.env.TRIAL_PERIOD_DAYS, // Apply trial period conditionally
         metadata: {
-          user_id: userId,
+          company_id: company_id,
           package_id: packageId,
           recurring_type: recurring_type,
-          price_id: priceId
+          price_id: priceId,
         },
       },
     });
-    console.log("session subscription session", session);
+
+    // console.log("Session created for subscription", session);
     return session;
   } catch (error) {
-    console.error(error);
+    console.error("Error creating subscription session:", error);
     throw createError(500, "Checkout Session Error");
   }
 };
+
 
 // ^ upgrade a checkout session for a subscription
 const updateSubscription = async (price_id,
