@@ -1,27 +1,13 @@
 const mongoose = require("mongoose");
-require("dotenv").config();
 
-const botSchema = mongoose.Schema(
+const templateSchema = mongoose.Schema(
   {
     company_id: {
       type: mongoose.Schema.Types.ObjectId,
       default: null,
       ref: 'Company',
     },
-    user_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      default: null,
-      ref: 'User',
-    },
     name: {
-      type: String,
-      default: '',
-    },
-    assistant_id: {
-      type: String,
-      default: '',
-    },
-    vector_store_id: {
       type: String,
       default: '',
     },
@@ -33,22 +19,6 @@ const botSchema = mongoose.Schema(
       type: String,
       default: '',
     },
-    bot_logo: {
-      type: String,
-      default: '',
-    },
-    user_logo: {
-      type: String,
-      default: '',
-    },
-    bg_light: {
-      type: String,
-      default: `${process.env.S3_BUCKET_URL}/lbg1.jpeg`,
-    },
-    bg_dark: {
-      type: String,
-      default: `${process.env.S3_BUCKET_URL}/dbg1.jpeg`,
-    },
     description: {
       type: String,
       default: '',
@@ -56,38 +26,6 @@ const botSchema = mongoose.Schema(
     system_prompt: {
       type: String,
       default: '',
-    },
-    faq: {
-      type: Boolean,
-      default: false,
-    },
-    image_display: {
-      type: Boolean,
-      default: false,
-    },
-    primary_color: {
-      type: String,
-      default: '#044088',
-    },
-    secondary_color: {
-      type: String,
-      default: '#050260',
-    },
-    font_color: {
-      type: String,
-      default: '#ffffff',
-    },
-    primary_color_dark: {
-      type: String,
-      default: '#044088',
-    },
-    secondary_color_dark: {
-      type: String,
-      default: '#050260',
-    },
-    font_color_dark: {
-      type: String,
-      default: '#ffffff',
     },
     model: {
       type: String,
@@ -113,10 +51,6 @@ const botSchema = mongoose.Schema(
       type: Number,
       default: 0.5,
     },
-    unique_id: {
-      type: String,
-      default: "",
-    },
     first_message: {
       type: String,
       default: "",
@@ -132,11 +66,6 @@ const botSchema = mongoose.Schema(
     target_audience: {
       type: String,
       default: "",
-    },
-    embedding_url: {
-      type: String,
-      unique: true,
-      required: true,
     },
     call_to_action: {
       type: String,
@@ -163,18 +92,6 @@ const botSchema = mongoose.Schema(
       enum: ["en", "ar"],
       default: "en",
     },
-    dark_mode: {
-      type: Boolean,
-      default: false,
-    },
-    bot_avatar: {
-      type: String,
-      default: "",
-    },
-    user_avatar: {
-      type: String,
-      default: "",
-    },
     category: {
       type: String,
       default: "",
@@ -193,5 +110,5 @@ const botSchema = mongoose.Schema(
   }
 );
 
-const Bot = mongoose.model("Bot", botSchema);
-module.exports = Bot;
+const Template = mongoose.model("Template", templateSchema);
+module.exports = Template;

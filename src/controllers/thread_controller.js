@@ -9,6 +9,7 @@ const {
   runThreadById,
   addFileToThread,
   deleteFileFromThread,
+  stopRun,
 } = require("../services/thread_services");
 const { createError } = require("../common/error");
 
@@ -93,13 +94,19 @@ const runThreadByID = async (req, res, next) => {
     res.sseSetup();
     const eventEmitter = new EventEmitter();
     let streamClosed = false;
+    let run_id = null;
 
     eventEmitter.on("event", (data) => {
       if (streamClosed) {
         return;
       }
-      if (data.event === "thread.message.delta") {
-        res.sseSend(data.data.delta.content[0].text.value);
+      if (data.event === "thread.run.created") {
+        run_id = data.data.id;
+      } else if (data.event === "thread.message.delta") {
+        res.sseSend({
+          id: run_id,
+          chunk: data.data.delta.content[0].text.value
+        });
       } else if (data.event === "thread.run.completed") {
         res.sseStop();
         streamClosed = true;
@@ -120,16 +127,49 @@ const runThreadByID = async (req, res, next) => {
   }
 };
 
+// * Function to stop a run using id
+const stopRunById = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const thread_id = req?.body?.thread_id;
+    if (!thread_id) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "Thread Id Not Provided"));
+    }
+    const thread = await getThreadById(thread_id, session);
+    const run_id = req?.body?.run_id;
+    if (!run_id) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "Run Id Not Provided"));
+    }
+    await stopRun(thread.thread_id, run_id);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ message: "success" });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
 // * Function to upload a file to the thread by ID
 const uploadFileToThread = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
     if (!req.file) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "File not uploaded"));
     }
     const fileLocation = process.env.BULK_FILE_LOCATION;
     if (!fileLocation) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "env for file location is missing"));
     }
     const fullPath = path.join(
@@ -138,13 +178,11 @@ const uploadFileToThread = async (req, res, next) => {
     );
     const thread_id = req?.body?.thread_id;
     if (!thread_id) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "thread_id not provided"));
     }
-    const package = req?.body?.package;
-    if (!package) {
-      return next(createError(400, "Package not found"));
-    }
-    const file = await addFileToThread(thread_id, fullPath, req.file, package, session);
+    const file = await addFileToThread(thread_id, fullPath, req.file, session);
     fs.unlinkSync(fullPath);
     await session.commitTransaction();
     session.endSession();
@@ -164,6 +202,8 @@ const deleteFileFromThreadByID = async (req, res, next) => {
     const thread_id = req?.body?.thread_id;
     const file_id = req?.body?.file_id;
     if (!thread_id || !file_id) {
+      await session.abortTransaction();
+      session.endSession();
       return next(createError(400, "Both thread_id and file_id need to be provided"));
     }
     const message = await deleteFileFromThread(thread_id, file_id, session);
@@ -183,4 +223,5 @@ module.exports = {
   runThreadByID,
   uploadFileToThread,
   deleteFileFromThreadByID,
+  stopRunById,
 }

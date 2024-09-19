@@ -253,6 +253,30 @@ const updateUserByID = async (req, res, next) => {
   }
 };
 
+// * Function to update self info
+const updateUserSelfInfo = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    
+    if (req?.body) {
+      const {id} = req.user;
+      const user = await updateUserById(id, req.body, session);
+      await session.commitTransaction();
+      session.endSession();
+      res.status(200).json(user);
+    } else {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "No body provided"));
+    }
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
 // * Function to delete user by ID
 const deleteUserByID = async (req, res, next) => {
   const session = await mongoose.startSession();
@@ -361,4 +385,5 @@ module.exports = {
   updateUserByID,
   deleteUserByID,
   changeUserRoleByID,
+  updateUserSelfInfo,
 };

@@ -66,7 +66,7 @@ const create = async (req, res, next) => {
     const botObj = {
       user_id: id,
       company_id: company?._id,
-      model: "gpt-4-turbo",
+      model: "gpt-4o",
     };
     for (let item in req?.body) {
       if (item === "company_id" || item === "user_id") {
