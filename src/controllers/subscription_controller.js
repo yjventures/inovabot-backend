@@ -12,6 +12,8 @@ const mongoose = require("mongoose");
 const { createError } = require("../common/error");
 const { findPackageById } = require("../services/package_services");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const { userType } = require("../utils/enums");
+
 
 const getAllPrice = async (req, res, next) => {
   try {
@@ -30,12 +32,14 @@ const createStripeSubscription = async (req, res, next) => {
 
   try {
     session.startTransaction();
-    const { id } = req.user;
-    const { price_id, package_id, recurring_type } = req.body;
-    if (!price_id || !package_id) {
+    // const { type } = req.user;
+    // const isReseller = type === userType.RESELLER;
+
+    const { price_id, package_id, recurring_type, company_id } = req.body;
+    if (!price_id || !package_id || !company_id) {
       await session.abortTransaction();
       session.endSession();
-      return next(createError(400, "price id and package_id must be provided"));
+      return next(createError(400, "price id, Company id and package_id must be provided"));
     }
     const package = await findPackageById(package_id, session);
     if (Number(package.price.monthly.price) === 0) {
@@ -60,9 +64,10 @@ const createStripeSubscription = async (req, res, next) => {
     }
     const stripeSession = await createStripeSubscriptionService(
       price_id,
-      id,
+      company_id,
       package_id,
       recurring_type,
+      // isReseller,
       session
     );
     if (!stripeSession) {
@@ -87,16 +92,15 @@ const updateStripeSubscription = async (req, res, next) => {
 
   try {
     session.startTransaction();
-    const { id } = req.user;
-    const { price_id, package_id, recurring_type } = req.body;
-    if (!price_id || !package_id) {
+    const { price_id, package_id, recurring_type, company_id} = req.body;
+    if (!price_id || !package_id || !company_id) {
       await session.abortTransaction();
       session.endSession();
-      return next(createError(400, "price id and package_id must be provided"));
+      return next(createError(400, "price id and package_id and company id must be provided"));
     }
     const stripeSession = await upgradeStripeSubscriptionService(
       price_id,
-      id,
+      company_id,
       package_id,
       recurring_type,
       session
@@ -255,8 +259,7 @@ const handleWebhook = async (req, res, next) => {
 
     // console.log("Successfully constructed event:", event);
 
-    session.startTransaction(); // Start the transaction
-
+    session.startTransaction(); 
     await handleWebhookEvent(event, session);
 
     await session.commitTransaction();

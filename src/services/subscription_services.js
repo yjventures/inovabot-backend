@@ -7,6 +7,7 @@ const {
 const {
   updateCompanyById,
   findCompanyByObject,
+  findCompanyById,
 } = require("./company_services");
 const { findPackageById } = require("./package_services");
 const { findUserById, updateUserById } = require("./user_services");
@@ -72,53 +73,58 @@ const getPriceService = async () => {
 // & create stripe subscription
 const createStripeSubscriptionService = async (
   price_id,
-  user_id,
+  company_id,
   package_id,
   recurring_type,
+  // isReseller, // Add isReseller here
   session
 ) => {
   try {
-    console.log("user id", user_id);
-    const company = await findCompanyByObject({ user_id }, session);
+
+    const company = await findCompanyById(company_id, session);
     if (!company) {
       throw createError(404, "Company not found");
     }
-    const stripe_customer_id = company?.stripe_customer_id;
 
+    const stripe_customer_id = company?.stripe_customer_id;
     if (!stripe_customer_id) {
-      throw createError(400, "stripe customer id not found");
+      throw createError(400, "Stripe customer ID not found");
     }
-    // Create a checkout session for a subscription
+
+    // Create a checkout session for a subscription with the reseller flag
     const stripeSession = await subscriptionSession(
       price_id,
       stripe_customer_id,
-      user_id,
+      company_id,
       recurring_type,
-      package_id
+      package_id,
+      // isReseller // Pass isReseller flag
     );
 
     // Send the URL of the checkout session as a JSON response
     if (!stripeSession.url) {
       throw createError(500, "Failed to create checkout session");
     }
+
     return stripeSession.url;
   } catch (error) {
     // Log any errors that occur
-    console.error(error);
+    console.error("Error in subscription service:", error);
     throw error;
   }
 };
 
+
 // & upgrade or downgrade stripe subscription
 const upgradeStripeSubscriptionService = async (
   price_id,
-  user_id,
+  company_id,
   package_id,
   recurring_type,
   session
 ) => {
   try {
-    const company = await findCompanyByObject({ user_id }, session);
+    const company = await findCompanyById(company_id, session);
     if (!company) {
       throw createError(404, "Company not found");
     }
@@ -255,7 +261,7 @@ const getSubscriptionStatusService = async (stripe_customer_id) => {
 };
 
 const saveSubscriptionInfoService = async (
-  user_id,
+  companyId,
   package_id,
   session,
   start_period,
@@ -266,11 +272,10 @@ const saveSubscriptionInfoService = async (
 ) => {
   try {
     console.log("entering the save subscription info services------------>>>");
-    const user = await findUserById(user_id, session);
-    const companyId = user.company_id;
+    const company = await findCompanyById(companyId, session);
     const package = await findPackageById(package_id, session);
 
-    if (!companyId) {
+    if (!company) {
       throw createError(400, "User is not associated with a company");
     }
 
@@ -279,7 +284,7 @@ const saveSubscriptionInfoService = async (
     }
 
     const subscriptionCollection = await new subscription({
-      user_id: user_id,
+      user_id: company?.user_id,
       company_id: companyId,
       package_id: package_id,
       subscription_id: subscriptionId,
@@ -314,7 +319,7 @@ const saveSubscriptionInfoService = async (
 };
 
 const updateSubscriptionInfoService = async (
-  user_id,
+  companyId,
   session,
   start_period,
   end_period,
@@ -323,20 +328,12 @@ const updateSubscriptionInfoService = async (
   subscriptionId
 ) => {
   try {
-    console.log("Entering updateSubscriptionInfoService...");
-    const user = await findUserById(user_id, session);
-
-    if (!user) {
-      throw createError(404, "User not found");
+    const company = await findCompanyById(companyId, session)
+    if (!company) {
+      throw createError(404, "Company not found");
     }
 
-    const companyId = user.company_id;
-
-    if (!companyId) {
-      throw createError(400, "User is not associated with a company");
-    }
-
-    const query = { user_id: user_id, company_id: companyId };
+    const query = { user_id: company?.user_id, company_id: companyId };
 
     const package = await Package.findOne({
       $or: [
@@ -382,7 +379,7 @@ const updateSubscriptionInfoService = async (
       throw createError(500, "Failed to update company info");
     }
     const updateUser = await updateUserById(
-      user_id,
+      company.user_id.toString(),
       { active_subscription: null },
       session
     );
@@ -426,18 +423,22 @@ const handleCheckoutSessionCompleted = async (eventSession) => {
       throw createError(400, "Subscription ID not found in session");
     }
     // Extract metadata from session for custom processing
-    const userId = eventSession.metadata.user_id;
+    const companyId = eventSession.metadata.company_id;
     const packageId = eventSession.metadata.package_id;
     const startPeriod = eventSession.current_period_start;
     const endPeriod = eventSession.current_period_end;
     const recurringType = eventSession.metadata.recurring_type;
     const priceId = eventSession.metadata.price_id;
 
+    const company = await findCompanyById(companyId, session)
+    if(!company){
+      throw createError(400, "Company not found")
+    }
 
 
     // Save subscription information using the service function
     await saveSubscriptionInfoService(
-      userId,
+      companyId,
       packageId,
       session, // Pass the session to the service function
       startPeriod,
@@ -449,7 +450,7 @@ const handleCheckoutSessionCompleted = async (eventSession) => {
 
     //TODO: this is for active subscription is equal null
     const updateUser = await updateUserById(
-      userId,
+      company.user_id,
       { active_subscription: null },
       session
     );
@@ -494,14 +495,14 @@ const handleUpdateSessionCompleted = async (eventSession) => {
       const subscription = await stripe?.subscriptions?.retrieve(
         subscriptionId
       );
-      const userId = eventSession?.metadata?.user_id;
+      const companyId = eventSession?.metadata?.company_id;
       const packageId = eventSession?.metadata?.package_id;
       const startPeriod = subscription?.current_period_start;
       const endPeriod = subscription?.current_period_end;
       const recurringType = eventSession?.metadata?.recurring_type;
 
       const result = await updateSubscriptionInfoService(
-        userId,
+        companyId,
         session,
         startPeriod,
         endPeriod,
