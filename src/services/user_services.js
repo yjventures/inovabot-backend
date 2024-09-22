@@ -83,6 +83,10 @@ const getUsers = async (req, session) => {
       } else if (item === "search") {
         const regex = new RegExp(req.query.search, "i");
         query.name = { $regex: regex };
+      } else if (item === "company_id" || item === "active_subscription") {
+        if (mongoose.Types.ObjectId.isValid(req?.query[item])) {
+          query[item] = new mongoose.Types.ObjectId(req?.query[item]);
+        }
       } else {
         query[item] = req?.query[item];
       }
@@ -130,6 +134,10 @@ const getUsersForReseller = async (req, session) => {
       } else if (item === "search") {
         const regex = new RegExp(req.query.search, "i");
         query.name = { $regex: regex };
+      } else if (item === "company_id" || item === "active_subscription") {
+        if (mongoose.Types.ObjectId.isValid(req?.query[item])) {
+          query[item] = new mongoose.Types.ObjectId(req?.query[item]);
+        }
       } else {
         query[item] = req?.query[item];
       }
@@ -153,6 +161,9 @@ const getUsersForReseller = async (req, session) => {
         $match: {
           'company.reseller_id': new mongoose.Types.ObjectId(req.user.id)
         }
+      },
+      {
+        $sort: { [sortBy]: 1 } // Add this line to sort by the specified field
       },
       {
         $skip: ((page - 1) * limit)
