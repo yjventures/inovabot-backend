@@ -10,7 +10,7 @@ const {
   deleteUserById,
   changeUserRolebyId,
 } = require("../services/user_services");
-const { findCompanyById } = require("../services/company_services");
+const { findCompanyById, findCompanyByObject } = require("../services/company_services");
 const { handleEmailLogin } = require("../services/auth_services");
 const { createError } = require("../common/error");
 const { userType, userRoleType } = require("../utils/enums");
@@ -176,7 +176,7 @@ const getUserByID = async (req, res, next) => {
     session.startTransaction();
     const id = req?.params?.id;
     const user = await findUserById(id, session);
-    const company = await findCompanyById(user._id.toString(), session);
+    const company = await findCompanyByObject({user_id: user._id}, session);
     if (
       req.user.type === userType.RESELLER &&
       company?.reseller_id.toString() !== req.user.id.toString()
