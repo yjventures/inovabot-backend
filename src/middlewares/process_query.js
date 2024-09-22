@@ -27,6 +27,11 @@ const process_query = (req, res, next) => {
             delete req.query.category;
           }
         }
+        if (item === 'company_id') {
+          if (req.query.company_id === 'All') {
+            delete req.query.company_id;
+          }
+        }
        }
     }
     next();
