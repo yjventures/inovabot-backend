@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../models/user");
 const {
   createRole,
@@ -135,7 +136,7 @@ const getUsersForReseller = async (req, session) => {
     }
     const users = await User.aggregate([
       {
-        $match: queryFilters
+        $match: query
       },
       {
         $lookup: {
@@ -150,11 +151,11 @@ const getUsersForReseller = async (req, session) => {
       },
       {
         $match: {
-          'company.reseller_id': mongoose.Types.ObjectId(req.user.id)
+          'company.reseller_id': new mongoose.Types.ObjectId(req.user.id)
         }
       },
       {
-        $skip: skip
+        $skip: ((page - 1) * limit)
       },
       {
         $limit: limit
@@ -163,16 +164,16 @@ const getUsersForReseller = async (req, session) => {
         $project: {
           name: 1,
           email: 1,
-          company_id: 1,
+          company_position: 1,
+          'company._id': 1,
           'company.name': 1,
-          'company.reseller_id': 1
         }
       }
     ]).session(session);
 
     const totalDocuments = await User.aggregate([
       {
-        $match: queryFilters
+        $match: query
       },
       {
         $lookup: {
@@ -187,7 +188,7 @@ const getUsersForReseller = async (req, session) => {
       },
       {
         $match: {
-          'company.reseller_id': mongoose.Types.ObjectId(req.user.id)
+          'company.reseller_id': new mongoose.Types.ObjectId(req.user.id)
         }
       },
       {
