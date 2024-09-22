@@ -106,6 +106,112 @@ const getUsers = async (req, session) => {
   }
 };
 
+// & Function to get users by querystring for Reseller
+const getUsersForReseller = async (req, session) => {
+  try {
+    const query = {};
+    let page = 1,
+      limit = 10;
+    let sortBy = "createdAt";
+    for (let item in req?.query) {
+      if (item === "page") {
+        page = Number(req?.query?.page);
+        if (isNaN(page)) {
+          page = 1;
+        }
+      } else if (item === "limit") {
+        limit = Number(req?.query?.limit);
+        if (isNaN(limit)) {
+          limit = 10;
+        }
+      } else if (item === "sortBy" && req.query.sortBy) {
+        sortBy = req?.query?.sortBy;
+      } else if (item === "search") {
+        const regex = new RegExp(req.query.search, "i");
+        query.name = { $regex: regex };
+      } else {
+        query[item] = req?.query[item];
+      }
+    }
+    const users = await User.aggregate([
+      {
+        $match: queryFilters
+      },
+      {
+        $lookup: {
+          from: 'companies',
+          localField: 'company_id',
+          foreignField: '_id',
+          as: 'company'
+        }
+      },
+      {
+        $unwind: '$company'
+      },
+      {
+        $match: {
+          'company.reseller_id': mongoose.Types.ObjectId(req.user.id)
+        }
+      },
+      {
+        $skip: skip
+      },
+      {
+        $limit: limit
+      },
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          company_id: 1,
+          'company.name': 1,
+          'company.reseller_id': 1
+        }
+      }
+    ]).session(session);
+
+    const totalDocuments = await User.aggregate([
+      {
+        $match: queryFilters
+      },
+      {
+        $lookup: {
+          from: 'companies',
+          localField: 'company_id',
+          foreignField: '_id',
+          as: 'company'
+        }
+      },
+      {
+        $unwind: '$company'
+      },
+      {
+        $match: {
+          'company.reseller_id': mongoose.Types.ObjectId(req.user.id)
+        }
+      },
+      {
+        $count: "totalDocuments"
+      }
+    ]).session(session);
+
+    const totalCount = totalDocuments.length > 0 ? totalDocuments[0].totalDocuments : 0;
+    const totalPage = Math.ceil(totalCount / limit);
+
+    return {
+      data: users,
+      metadata: {
+        totalDocuments: totalCount,
+        currentPage: page,
+        totalPage,
+        message: "Success",
+      },
+    };
+  } catch (err) {
+    throw createError(404, "User not found");
+  }
+};
+
 // & Function to update a user by ID
 const updateUserById = async (id, body, session) => {
   try {
@@ -157,7 +263,8 @@ const deleteUserById = async (id, session) => {
 const changeUserRolebyId = async (id, roleName, session) => {
   try {
     const user = await findUserById(id, session);
-    let permission = null, name = null;
+    let permission = null,
+      name = null;
     if (roleName === userType.ADMIN) {
       name = userType.ADMIN;
       permission = roles.admin;
@@ -186,6 +293,7 @@ module.exports = {
   findUserByObject,
   createUser,
   getUsers,
+  getUsersForReseller,
   updateUserById,
   deleteUserById,
   changeUserRolebyId,
