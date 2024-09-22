@@ -86,7 +86,7 @@ app.use('/audios', require('../routers/audio_router'));
 app.use('/files', require('../routers/file_router'));
 
 // ~ Router for analytics
-app.use('/analytics', require('../routers/analytics_router'));
+app.use('/dashboard', require('../routers/dashboard_router'));
 
 // ~ Router for categories
 app.use('/categories', require('../routers/category_router'));
