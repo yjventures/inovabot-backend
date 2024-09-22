@@ -176,6 +176,7 @@ const getUsersForReseller = async (req, session) => {
           name: 1,
           email: 1,
           company_position: 1,
+          type: 1,
           'company._id': 1,
           'company.name': 1,
         }
