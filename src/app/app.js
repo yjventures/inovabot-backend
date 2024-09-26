@@ -100,6 +100,9 @@ app.use('/links', require('../routers/link_router'));
 // ~ Router for templates
 app.use('/templates', require('../routers/template_router'));
 
+// ~ Router for dashboard
+app.use('/dashboards', require('../routers/dashboard_router'));
+
 // * GLobal error handle middleware
 app.use((err, req, res, next) => {
   if (res.headersSent) {

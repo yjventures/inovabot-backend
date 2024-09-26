@@ -67,18 +67,16 @@ const getUsers = async (req, session) => {
     let page = 1,
       limit = 10;
     let sortBy = "createdAt";
+    
+    // Build query from req.query
     for (let item in req?.query) {
       if (item === "page") {
         page = Number(req?.query?.page);
-        if (isNaN(page)) {
-          page = 1;
-        }
+        if (isNaN(page)) page = 1;
       } else if (item === "limit") {
         limit = Number(req?.query?.limit);
-        if (isNaN(limit)) {
-          limit = 10;
-        }
-      } else if (item === "sortBy") {
+        if (isNaN(limit)) limit = 10;
+      } else if (item === "sortBy" && req.query.sortBy) {
         sortBy = req?.query?.sortBy;
       } else if (item === "search") {
         const regex = new RegExp(req.query.search, "i");
@@ -91,25 +89,129 @@ const getUsers = async (req, session) => {
         query[item] = req?.query[item];
       }
     }
-    const users = await User.find(query)
-      .sort(sortBy)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .session(session);
-    const count = await User.countDocuments(query, { session });
+
+    // Aggregate users based on the query
+    const users = await User.aggregate([
+      {
+        $match: query
+      },
+      {
+        $lookup: {
+          from: 'companies',
+          localField: 'company_id',
+          foreignField: '_id',
+          as: 'company'
+        }
+      },
+      {
+        $unwind: {
+          path: '$company',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        // Add fields to calculate the number of companies and company members for each user
+        $addFields: {
+          number_of_company: {
+            $cond: {
+              if: { $eq: ['$company', null] },
+              then: 0,
+              else: {
+                $size: {
+                  $filter: {
+                    input: ['$company'],  // This refers to the array of companies
+                    as: 'company',
+                    cond: { $ne: ['$$company', null] }
+                  }
+                }
+              }
+            }
+          },
+          number_of_company_members: {
+            $cond: {
+              if: { $eq: ['$company', null] },
+              then: 0,
+              else: {
+                $size: {
+                  $filter: {
+                    input: ['$$ROOT'], // Refers to the entire document
+                    as: 'all_users',
+                    cond: { $eq: ['$$all_users.company_id', '$company._id'] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        $sort: { [sortBy]: 1 }
+      },
+      {
+        $skip: ((page - 1) * limit)
+      },
+      {
+        $limit: limit
+      },
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          company_position: 1,
+          type: 1,
+          company: {
+            _id: 1,
+            name: 1,
+            expires_at: 1
+          },
+          number_of_company: 1,
+          number_of_company_members: 1
+        }
+      }
+    ]).session(session);
+
+    // Get the total number of users for pagination
+    const totalDocuments = await User.aggregate([
+      {
+        $match: query
+      },
+      {
+        $lookup: {
+          from: 'companies',
+          localField: 'company_id',
+          foreignField: '_id',
+          as: 'company'
+        }
+      },
+      {
+        $unwind: {
+          path: '$company',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $count: "totalDocuments"
+      }
+    ]).session(session);
+
+    const totalCount = totalDocuments.length > 0 ? totalDocuments[0].totalDocuments : 0;
+    const totalPage = Math.ceil(totalCount / limit);
+
+    // Return the result with metadata and extra counts
     return {
       data: users,
       metadata: {
-        totalDocuments: count,
+        totalDocuments: totalCount,
         currentPage: page,
-        totalPage: Math.max(1, Math.ceil(count / limit)),
+        totalPage,
+        message: "Success",
       },
-      message: "Success",
     };
   } catch (err) {
     throw createError(404, "User not found");
   }
 };
+
 
 // & Function to get users by querystring for Reseller
 const getUsersForReseller = async (req, session) => {
