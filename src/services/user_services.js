@@ -98,8 +98,8 @@ const getUsers = async (req, session) => {
       {
         $lookup: {
           from: 'companies',
-          localField: 'company_id',
-          foreignField: '_id',
+          localField: '_id',
+          foreignField: 'user_id',
           as: 'company'
         }
       },
@@ -159,6 +159,8 @@ const getUsers = async (req, session) => {
           email: 1,
           company_position: 1,
           type: 1,
+          image: 1,
+          createdAt: 1,
           company: {
             _id: 1,
             name: 1,
@@ -178,8 +180,8 @@ const getUsers = async (req, session) => {
       {
         $lookup: {
           from: 'companies',
-          localField: 'company_id',
-          foreignField: '_id',
+          localField: '_id',
+          foreignField: 'user_id',
           as: 'company'
         }
       },
@@ -251,8 +253,8 @@ const getUsersForReseller = async (req, session) => {
       {
         $lookup: {
           from: 'companies',
-          localField: 'company_id',
-          foreignField: '_id',
+          localField: '_id',
+          foreignField: 'user_id',
           as: 'company'
         }
       },
@@ -292,8 +294,8 @@ const getUsersForReseller = async (req, session) => {
       {
         $lookup: {
           from: 'companies',
-          localField: 'company_id',
-          foreignField: '_id',
+          localField: '_id',
+          foreignField: 'user_id',
           as: 'company'
         }
       },
