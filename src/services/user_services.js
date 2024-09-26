@@ -104,12 +104,6 @@ const getUsers = async (req, session) => {
         }
       },
       {
-        $unwind: {
-          path: '$company',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
         // Add fields to calculate the number of companies and company members for each user
         $addFields: {
           number_of_company: {
@@ -119,7 +113,7 @@ const getUsers = async (req, session) => {
               else: {
                 $size: {
                   $filter: {
-                    input: ['$company'],  // This refers to the array of companies
+                    input: '$company',  // This refers to the array of companies
                     as: 'company',
                     cond: { $ne: ['$$company', null] }
                   }
@@ -136,7 +130,7 @@ const getUsers = async (req, session) => {
                   $filter: {
                     input: ['$$ROOT'], // Refers to the entire document
                     as: 'all_users',
-                    cond: { $eq: ['$$all_users.company_id', '$company._id'] }
+                    cond: { $eq: ['$$all_users.company_id', '$company[0]._id'] }
                   }
                 }
               }
@@ -161,11 +155,7 @@ const getUsers = async (req, session) => {
           type: 1,
           image: 1,
           createdAt: 1,
-          company: {
-            _id: 1,
-            name: 1,
-            expires_at: 1
-          },
+          company: 1,
           number_of_company: 1,
           number_of_company_members: 1
         }
