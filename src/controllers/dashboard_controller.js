@@ -3,15 +3,18 @@ const {
   searchEntitiesServices
 } = require("../services/dashboard_services");
 const { createError } = require("../common/error");
+const { userType } = require("../utils/enums")
 
 const totalInformationAnalyticsController = async (req, res, next) => {
   try {
-    
+    if (req.user.type === userType.RESELLER) {
+      req.query.reseller_id = req.user.id;
+    }
     const data = await totalInformationAnalyticsService(req.query);
 
     res.status(200).json(data);
   } catch (err) {
-    next(createError(404, "Analytics not found"));
+    next(createError(404, err.message));
   }
 };
 

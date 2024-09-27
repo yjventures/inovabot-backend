@@ -8,11 +8,8 @@ const { createError } = require("../common/error");
 const OPENAI_API_KEY = process.env.OPENAI_API;
 const UNKNOWN_KEY = "Bearer sess-cTYyRjwPDCZTatBJ67YsnZbeNV8wDyfmTXcTLRTh";
 
-const totalInformationAnalyticsService = async (
-  query
-) => {
+const totalInformationAnalyticsService = async (query) => {
   try {
-    console.log("filter", filter);
     let startDate, endDate;
     const { filter } = query;
     delete query.filter;
@@ -36,6 +33,21 @@ const totalInformationAnalyticsService = async (
         break;
     }
 
+    const companyQuery = {};
+    const botQuery = {};
+    const fileQuery = {};
+    if (query.company_id) {
+      companyQuery._id = query.company_id;
+      botQuery.company_id = query.company_id;
+      fileQuery.company_id = query.company_id;
+    } else if (query.reseller_id) {
+      const companies = await Company.find({ reseller_id: query.reseller_id }).select('_id').lean();
+      const companyIds = companies.map(company => company._id);
+      companyQuery._id = { $in: companyIds };
+      botQuery.company_id = { $in: companyIds };
+      fileQuery.company_id = { $in: companyIds };
+    }
+
     // End date is always now for 'All' and other time periods
     endDate = new Date();
     console.log(startDate);
@@ -45,19 +57,16 @@ const totalInformationAnalyticsService = async (
     const [botCount, companyCount, fileCount] = await Promise.all([
       Bot.countDocuments({
         createdAt: { $gte: startDate, $lte: endDate },
-        ...query,
-      })
-        .lean(),
+        ...botQuery,
+      }).lean(),
       Company.countDocuments({
         createdAt: { $gte: startDate, $lte: endDate },
-        ...query,
-      })
-        .lean(),
+        ...companyQuery,
+      }).lean(),
       File.countDocuments({
         createdAt: { $gte: startDate, $lte: endDate },
-        ...query,
-      })
-        .lean(),
+        ...fileQuery,
+      }).lean(),
     ]);
 
     const startOfToday = moment().startOf("day").toDate();
@@ -69,19 +78,16 @@ const totalInformationAnalyticsService = async (
       await Promise.all([
         Bot.countDocuments({
           createdAt: { $gte: startOfToday, $lte: endOfToday },
-          ...query,
-        })
-          .lean(),
+          ...botQuery,
+        }).lean(),
         Company.countDocuments({
           createdAt: { $gte: startOfToday, $lte: endOfToday },
-          ...query,
-        })
-          .lean(),
+          ...companyQuery,
+        }).lean(),
         File.countDocuments({
           createdAt: { $gte: startOfToday, $lte: endOfToday },
-          ...query,
-        })
-          .lean(),
+          ...fileQuery,
+        }).lean(),
       ]);
 
     const startOfYesterday = moment()
@@ -96,19 +102,16 @@ const totalInformationAnalyticsService = async (
       await Promise.all([
         Bot.countDocuments({
           createdAt: { $gte: startOfYesterday, $lte: endOfYesterday },
-          ...query,
-        })
-          .lean(),
+          ...botQuery,
+        }).lean(),
         Company.countDocuments({
           createdAt: { $gte: startOfYesterday, $lte: endOfYesterday },
-          ...query,
-        })
-          .lean(),
+          ...companyQuery,
+        }).lean(),
         File.countDocuments({
           createdAt: { $gte: startOfYesterday, $lte: endOfYesterday },
-          ...query,
-        })
-          .lean(),
+          ...fileQuery,
+        }).lean(),
       ]);
 
     const botDifference = todayBotCount - botCountYesterday;
@@ -128,14 +131,14 @@ const totalInformationAnalyticsService = async (
   }
 };
 
-const totalIncomeService = async ()=>{
+const totalIncomeService = async () => {
   try {
     // Fetch balance
     const balance = await stripe.balance.retrieve();
 
     // Available balance (funds ready for payout)
     const availableBalance = balance.available.reduce((total, bal) => {
-      if (bal.currency === 'usd') {
+      if (bal.currency === "usd") {
         return total + bal.amount;
       }
       return total;
@@ -144,30 +147,32 @@ const totalIncomeService = async ()=>{
     const available = availableBalance / 100;
 
     //this is for open ai costs
-    console.log(UNKNOWN_KEY)
+    console.log(UNKNOWN_KEY);
 
-    const response = await fetch(`https://api.openai.com/dashboard/billing/usage?end_date=2024-10-01&exclude_project_costs=true&new_endpoint=true&project_id&start_date=2024-09-01`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${UNKNOWN_KEY}`,
-      },
-    });
+    const response = await fetch(
+      `https://api.openai.com/dashboard/billing/usage?end_date=2024-10-01&exclude_project_costs=true&new_endpoint=true&project_id&start_date=2024-09-01`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${UNKNOWN_KEY}`,
+        },
+      }
+    );
 
     const data = await response.json();
     if (!response.ok) {
-      throw createError(400, 'Network response was not ok');
+      throw createError(400, "Network response was not ok");
     }
 
-
-    console.log('Usage Data:', data);
+    console.log("Usage Data:", data);
 
     return {
-     available
+      available,
     };
   } catch (err) {
     throw err;
   }
-}
+};
 
 const searchEntitiesServices = async (query) => {
   try {

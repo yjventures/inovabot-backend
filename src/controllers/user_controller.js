@@ -339,7 +339,7 @@ const changeUserRoleByID = async (req, res, next) => {
       return next(createError(400, "User id and role name must be provided"));
     }
     const oldUser = await findUserById(user_id, session);
-    const company = await findCompanyById(oldUser.company_id.toString(), session);
+    const company = await findCompanyByObject({ user_id }, session);
     if (
       req.user.type === userType.RESELLER &&
       company?.reseller_id.toString() !== req.user.id.toString()
