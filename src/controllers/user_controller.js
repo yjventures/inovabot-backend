@@ -236,7 +236,7 @@ const updateUserByID = async (req, res, next) => {
       }
       if (
         req.user.type === userType.USER &&
-        company?._id.toString() !== req.user.company_id.toString()
+        company?._id.toString() !== req.user.company.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
@@ -310,7 +310,7 @@ const deleteUserByID = async (req, res, next) => {
       }
       if (
         req.user.type === userType.USER &&
-        company?._id.toString() !== req.user.company_id.toString()
+        company?._id.toString() !== req.user.company.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
@@ -357,7 +357,7 @@ const changeUserRoleByID = async (req, res, next) => {
     }
     if (
       req.user.type === userType.USER &&
-      company?._id.toString() !== req.user.company_id.toString()
+      company?._id.toString() !== req.user.company.toString()
     ) {
       throw createError(400, "Not on your authorization");
     }
