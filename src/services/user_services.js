@@ -121,21 +121,19 @@ const getUsers = async (req, session) => {
               }
             }
           },
-          number_of_company_members: {
-            $cond: {
-              if: { $eq: ['$company', null] },
-              then: 0,
-              else: {
-                $size: {
-                  $filter: {
-                    input: ['$$ROOT'], // Refers to the entire document
-                    as: 'all_users',
-                    cond: { $eq: ['$$all_users.company_id', '$company[0]._id'] }
-                  }
-                }
-              }
-            }
-          }
+          // number_of_company_members: {
+          //   $cond: {
+          //     if: { $eq: ['$company', null] },
+          //     then: 0,
+          //     else: {
+          //       $size: {
+          //         $lookup: {
+                    
+          //         }
+          //       }
+          //     }
+          //   }
+          // }
         }
       },
       {
