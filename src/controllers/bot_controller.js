@@ -178,7 +178,7 @@ const updateBotByID = async (req, res, next) => {
       }
       if (
         req.user.type === userType.USER &&
-        company?._id.toString() !== req.user.company_id.toString()
+        company?._id.toString() !== req.user.company.toString()
       ) {
         throw createError(400, "Not on your authorization");
       }
@@ -231,7 +231,7 @@ const deleteBotByID = async (req, res, next) => {
     }
     if (
       req.user.type === userType.USER &&
-      company?._id.toString() !== req.user.company_id.toString()
+      company?._id.toString() !== req.user.company.toString()
     ) {
       throw createError(400, "Not on your authorization");
     }
