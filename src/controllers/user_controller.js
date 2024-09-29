@@ -176,6 +176,9 @@ const getUserByID = async (req, res, next) => {
     session.startTransaction();
     const id = req?.params?.id;
     const user = await findUserById(id, session);
+    if (id === req.user.id) {
+      return res.status(200).json({ user });
+    }
     const company = await findCompanyByObject({user_id: req?.user?.id}, session);
     if (
       req.user.type === userType.RESELLER &&
