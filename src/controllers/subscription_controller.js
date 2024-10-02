@@ -8,11 +8,13 @@ const {
   handleWebhookEvent,
   cancelStripeSubscriptionService
 } = require("../services/subscription_services");
+const { findUserById } = require("../services/user_services");
 const mongoose = require("mongoose");
 const { createError } = require("../common/error");
 const { findPackageById } = require("../services/package_services");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { userType } = require("../utils/enums");
+const { findCompanyById, findCompanyByObject } = require("../services/company_services");
 
 
 const getAllPrice = async (req, res, next) => {
@@ -50,7 +52,7 @@ const createStripeSubscription = async (req, res, next) => {
       }
       const today = new Date();
       const subscriptionInfo = await saveSubscriptionInfoService(
-        req?.body?.user_id,
+        company_id,
         package_id,
         session,
         today,
@@ -174,9 +176,9 @@ const saveSubscriptonInfo = async (req, res, next) => {
 
   try {
     session.startTransaction();
-    const { user_id, package_id, start_period, end_period } = req.body;
-    if (!user_id) {
-      return next(createError(400, "user id must be provided"));
+    const { company_id, package_id, start_period, end_period } = req.body;
+    if (!company_id) {
+      return next(createError(400, "company id must be provided"));
     } else if (!package_id) {
       return next(createError(400, "package id must be provided"));
     } else if (!start_period || !end_period) {
@@ -185,7 +187,7 @@ const saveSubscriptonInfo = async (req, res, next) => {
       );
     }
     const subscriptionInfo = await saveSubscriptionInfoService(
-      user_id,
+      company_id,
       package_id,
       session,
       start_period,
