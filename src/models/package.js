@@ -92,6 +92,10 @@ const packageSchema = mongoose.Schema(
       monthly: priceSchema, 
       yearly: priceSchema,
     },
+    hidden: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
