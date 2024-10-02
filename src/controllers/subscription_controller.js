@@ -14,7 +14,8 @@ const { createError } = require("../common/error");
 const { findPackageById } = require("../services/package_services");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { userType } = require("../utils/enums");
-const { findCompanyById, findCompanyByObject } = require("../services/company_services");
+const { findCompanyById, findCompanyByObject, updateCompanyById } = require("../services/company_services");
+const Company = require("../models/company");
 
 
 const getAllPrice = async (req, res, next) => {
@@ -64,6 +65,17 @@ const createStripeSubscription = async (req, res, next) => {
         { active_subscription: null },
         session
       );
+      const updateCompany = await User.findByIdAndUpdate(id, {
+        price_id: price_id
+      }, {
+        new: true,
+        session,
+      }).lean();
+      if (!updateCompany) {
+        await session.abortTransaction();
+        session.endSession();
+        return next(createError(500, "Failed to update company info"));
+      }
       await session.commitTransaction();
       session.endSession();
       return res
