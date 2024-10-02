@@ -65,7 +65,7 @@ const createStripeSubscription = async (req, res, next) => {
         { active_subscription: null },
         session
       );
-      const updateCompany = await User.findByIdAndUpdate(company_id, {
+      const updateCompany = await Company.findByIdAndUpdate(company_id, {
         price_id: price_id
       }, {
         new: true,
