@@ -128,22 +128,25 @@ const cancelStripeSubscription = async (req, res, next) => {
   try {
     session.startTransaction();
     const { id } = req.user;
-    const cancelStripeSession = await cancelStripeSubscriptionService(id,session);
+    
+    // Only pass the session to the service without transaction handling inside the service
+    const cancelStripeSession = await cancelStripeSubscriptionService(id, session);
     if (!cancelStripeSession) {
+      await session.abortTransaction();
       session.endSession();
       return next(createError(500, "Failed to create stripe subscription"));
     }
+
     await session.commitTransaction();
     session.endSession();
-    res
-      .status(200)
-      .json({ message: "generate checkout URL successfully", stripeSession });
+    res.status(200).json({ message: "Subscription cancelled successfully", cancelStripeSession });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
     next(err);
   }
 };
+
 
 const getSubscriptionInfo = async (req, res, next) => {
   try {

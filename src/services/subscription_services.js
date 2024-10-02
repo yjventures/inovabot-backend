@@ -178,16 +178,13 @@ const upgradeStripeSubscriptionService = async (
 // & cancel stripe subscription
 const cancelStripeSubscriptionService = async (user_id, session) => {
   try {
-
     // Find the user's company or subscription info from the database
     const company = await findCompanyByObject({ user_id }, session);
     if (!company) {
       throw createError(404, "Company not found");
     }
-    console.log("company", company)
-
+    
     const subscriptionId = company.subscription_id;
-    console.log("subscriptionId",subscriptionId)
     if (!subscriptionId) {
       throw createError(400, "No active subscription found");
     }
@@ -197,10 +194,8 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
     if (!subscription) {
       throw createError(500, "Failed to retrieve subscription from Stripe");
     }
-    const isTrialActive =
-      subscription.trial_end &&
-      subscription.trial_end > Math.floor(Date.now() / 1000);
 
+    const isTrialActive = subscription.trial_end && subscription.trial_end > Math.floor(Date.now() / 1000);
     let updateCompany;
 
     if (isTrialActive) {
@@ -209,6 +204,7 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
       if (!trialSubscription) {
         throw createError(500, "Failed to cancel trial subscription");
       }
+
       const updateData = {
         recurring_type: "",
         last_subscribed: null,
@@ -222,7 +218,7 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
       }
       return updateCompany;
     } else {
-
+      // Schedule cancellation at the end of the billing period
       const updateSubscription = await stripe.subscriptions.update(subscriptionId, {
         cancel_at_period_end: true,
       });
@@ -235,9 +231,10 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
     }
   } catch (error) {
     console.error("Error canceling subscription:", error);
-    throw error;
+    throw error; // Re-throw the error to be handled in the controller
   }
 };
+
 
 const getSubscriptionStatusService = async (stripe_customer_id) => {
   try {
