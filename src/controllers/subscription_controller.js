@@ -8,7 +8,7 @@ const {
   handleWebhookEvent,
   cancelStripeSubscriptionService
 } = require("../services/subscription_services");
-const { findUserById } = require("../services/user_services");
+const { findUserById, updateUserById } = require("../services/user_services");
 const mongoose = require("mongoose");
 const { createError } = require("../common/error");
 const { findPackageById } = require("../services/package_services");
@@ -43,6 +43,12 @@ const createStripeSubscription = async (req, res, next) => {
       session.endSession();
       return next(createError(400, "price id, Company id and package_id must be provided"));
     }
+    const company = await findCompanyById(company_id, session);
+    if (!company) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(404, "Company not found"));
+    }
     const package = await findPackageById(package_id, session);
     if (Number(package.price.monthly.price) === 0) {
       const today = new Date();
@@ -52,6 +58,11 @@ const createStripeSubscription = async (req, res, next) => {
         session,
         today,
         today.setFullYear(today.getFullYear() + 100)
+      );
+      const updateUser = await updateUserById(
+        company.user_id.toString(),
+        { active_subscription: null },
+        session
       );
       await session.commitTransaction();
       session.endSession();
