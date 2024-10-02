@@ -178,15 +178,16 @@ const upgradeStripeSubscriptionService = async (
 // & cancel stripe subscription
 const cancelStripeSubscriptionService = async (user_id, session) => {
   try {
-    session.startTransaction();
 
     // Find the user's company or subscription info from the database
     const company = await findCompanyByObject({ user_id }, session);
     if (!company) {
       throw createError(404, "Company not found");
     }
+    console.log("company", company)
 
     const subscriptionId = company.subscription_id;
+    console.log("subscriptionId",subscriptionId)
     if (!subscriptionId) {
       throw createError(400, "No active subscription found");
     }
@@ -219,9 +220,6 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
       if (!updateCompany) {
         throw createError(500, "Failed to update company info");
       }
-
-      await session.commitTransaction();
-      session.endSession();
       return updateCompany;
     } else {
 
@@ -236,8 +234,6 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
       return updateSubscription;
     }
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     console.error("Error canceling subscription:", error);
     throw error;
   }

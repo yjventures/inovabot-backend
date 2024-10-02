@@ -130,7 +130,6 @@ const cancelStripeSubscription = async (req, res, next) => {
     const { id } = req.user;
     const cancelStripeSession = await cancelStripeSubscriptionService(id,session);
     if (!cancelStripeSession) {
-      await session.abortTransaction();
       session.endSession();
       return next(createError(500, "Failed to create stripe subscription"));
     }
