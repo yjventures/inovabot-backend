@@ -45,11 +45,6 @@ const createStripeSubscription = async (req, res, next) => {
     }
     const package = await findPackageById(package_id, session);
     if (Number(package.price.monthly.price) === 0) {
-      if (!req?.body?.user_id) {
-        return next(
-          createError(400, "user_id must be provided for free package")
-        );
-      }
       const today = new Date();
       const subscriptionInfo = await saveSubscriptionInfoService(
         company_id,
