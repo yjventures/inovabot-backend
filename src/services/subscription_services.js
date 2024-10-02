@@ -80,7 +80,6 @@ const createStripeSubscriptionService = async (
   session
 ) => {
   try {
-
     const company = await findCompanyById(company_id, session);
     if (!company) {
       throw createError(404, "Company not found");
@@ -97,7 +96,7 @@ const createStripeSubscriptionService = async (
       stripe_customer_id,
       company_id,
       recurring_type,
-      package_id,
+      package_id
       // isReseller // Pass isReseller flag
     );
 
@@ -113,7 +112,6 @@ const createStripeSubscriptionService = async (
     throw error;
   }
 };
-
 
 // & upgrade or downgrade stripe subscription
 const upgradeStripeSubscriptionService = async (
@@ -183,7 +181,7 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
     if (!company) {
       throw createError(404, "Company not found");
     }
-    
+
     const subscriptionId = company.subscription_id;
     if (!subscriptionId) {
       throw createError(400, "No active subscription found");
@@ -195,12 +193,16 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
       throw createError(500, "Failed to retrieve subscription from Stripe");
     }
 
-    const isTrialActive = subscription.trial_end && subscription.trial_end > Math.floor(Date.now() / 1000);
+    const isTrialActive =
+      subscription.trial_end &&
+      subscription.trial_end > Math.floor(Date.now() / 1000);
     let updateCompany;
 
     if (isTrialActive) {
       // Cancel immediately if in trial
-      const trialSubscription = await stripe.subscriptions.cancel(subscriptionId);
+      const trialSubscription = await stripe.subscriptions.cancel(
+        subscriptionId
+      );
       if (!trialSubscription) {
         throw createError(500, "Failed to cancel trial subscription");
       }
@@ -212,16 +214,23 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
         subscription_id: "",
       };
 
-      updateCompany = await updateCompanyById(company?._id, updateData, session);
+      updateCompany = await updateCompanyById(
+        company?._id,
+        updateData,
+        session
+      );
       if (!updateCompany) {
         throw createError(500, "Failed to update company info");
       }
       return updateCompany;
     } else {
       // Schedule cancellation at the end of the billing period
-      const updateSubscription = await stripe.subscriptions.update(subscriptionId, {
-        cancel_at_period_end: true,
-      });
+      const updateSubscription = await stripe.subscriptions.update(
+        subscriptionId,
+        {
+          cancel_at_period_end: true,
+        }
+      );
 
       if (!updateSubscription) {
         throw createError(500, "Failed to cancel subscription");
@@ -234,7 +243,6 @@ const cancelStripeSubscriptionService = async (user_id, session) => {
     throw error; // Re-throw the error to be handled in the controller
   }
 };
-
 
 const getSubscriptionStatusService = async (stripe_customer_id) => {
   try {
@@ -321,7 +329,7 @@ const updateSubscriptionInfoService = async (
   subscriptionId
 ) => {
   try {
-    const company = await findCompanyById(companyId, session)
+    const company = await findCompanyById(companyId, session);
     if (!company) {
       throw createError(404, "Company not found");
     }
@@ -412,7 +420,7 @@ const handleCheckoutSessionCompleted = async (eventSession) => {
   try {
     // Extract subscription ID from session
     const subscriptionId = eventSession.id;
-    if(!subscriptionId){
+    if (!subscriptionId) {
       throw createError(400, "Subscription ID not found in session");
     }
     // Extract metadata from session for custom processing
@@ -423,11 +431,10 @@ const handleCheckoutSessionCompleted = async (eventSession) => {
     const recurringType = eventSession.metadata.recurring_type;
     const priceId = eventSession.metadata.price_id;
 
-    const company = await findCompanyById(companyId, session)
-    if(!company){
-      throw createError(400, "Company not found")
+    const company = await findCompanyById(companyId, session);
+    if (!company) {
+      throw createError(400, "Company not found");
     }
-
 
     // Save subscription information using the service function
     await saveSubscriptionInfoService(
@@ -536,7 +543,6 @@ const handleUpdateSessionCompleted = async (eventSession) => {
   }
 };
 
-
 const handleSubscriptionDeletion = async (subscriptionData) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -549,15 +555,15 @@ const handleSubscriptionDeletion = async (subscriptionData) => {
       throw createError(404, "User not found");
     }
 
-    const companyId = user.company_id;
-    console.log("User's company ID:", companyId);
+    const company = await findCompanyByObject({ user_id: user._id }, session);
+    console.log("User's company:", company);
 
-    if (!companyId) {
+    if (!company) {
       throw createError(400, "User is not associated with a company");
     }
 
-    await User.findByIdAndUpdate(
-      user_id,
+    await Company.findByIdAndUpdate(
+      company._id,
       { payment_status: false, last_subscribed: null, expires_at: null },
       { session }
     ); // Use session here
