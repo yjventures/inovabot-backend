@@ -136,20 +136,36 @@ const findPackageById = async (id, session) => {
 const updatePackageById = async (id, body, session) => {
   try {
     const query = await findPackageById(id, session);
+
     for (let item in body) {
       if (item === "recurring_date") {
         const date = new Date(body[item]);
         query[item] = date;
       } else if (item === "user_id" || item === "package") {
         query[item] = new mongoose.Types.ObjectId(body[item]);
+      } else if (item === "price") {
+        // Preserve existing nested fields (like stripe_id) for monthly and yearly
+        query[item] = {
+          ...query[item], // Preserve existing price fields
+          monthly: {
+            ...query[item]?.monthly, // Preserve existing monthly fields
+            ...body[item]?.monthly,  // Merge updated monthly fields
+          },
+          yearly: {
+            ...query[item]?.yearly,  // Preserve existing yearly fields
+            ...body[item]?.yearly,   // Merge updated yearly fields
+          },
+        };
       } else {
         query[item] = body[item];
       }
     }
+
     const updatePackage = await Package.findByIdAndUpdate(id, query, {
       new: true,
       session,
     }).lean();
+
     if (!updatePackage) {
       throw createError(400, "Package not updated");
     } else {
@@ -159,6 +175,8 @@ const updatePackageById = async (id, body, session) => {
     throw err;
   }
 };
+
+
 
 // & Function to delete a package by ID
 const deletePackageById = async (id, session) => {
