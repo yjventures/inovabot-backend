@@ -20,6 +20,10 @@ const threadSchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    name: {
+      type: String,
+      default: '',
+    },
     thread_id: {
       type: String,
       default: '',

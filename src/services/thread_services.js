@@ -78,6 +78,57 @@ const createAThread = async (body, session) => {
   }
 };
 
+// & Function to get threads using querystring
+const getThreadsUsingQueryString = async (req, session) => {
+  try {
+    const query = {};
+    let page = 1,
+      limit = 10;
+    let sortBy = "createdAt";
+    
+    for (let item in req?.query) {
+      if (item === "page") {
+        page = Number(req?.query?.page);
+        if (isNaN(page)) page = 1;
+      } else if (item === "limit") {
+        limit = Number(req?.query?.limit);
+        if (isNaN(limit)) limit = 10;
+      } else if (item === "sortBy" && req.query.sortBy) {
+        sortBy = req?.query?.sortBy;
+      } else if (item === "search") {
+        const regex = new RegExp(req.query.search, "i");
+        query.name = { $regex: regex };
+      } else if (item === "company_id") {
+        if (mongoose.Types.ObjectId.isValid(req?.query[item])) {
+          query[item] = new mongoose.Types.ObjectId(req?.query[item]);
+        }
+      } else {
+        query[item] = req?.query[item];
+      }
+    }
+    const threads = await Thread.find(query)
+      .sort(sortBy)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .session(session);
+    if (!threads || threads.length === 0) {
+      throw createError(404, "No threads found");
+    }
+    const count = await Thread.countDocuments(query, { session });
+    return {
+      data: threads,
+      metadata: {
+        totalDocuments: count,
+        currentPage: page,
+        totalPage: Math.max(1, Math.ceil(count / limit)),
+      },
+      message: "Success",
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
 // & Function to get thread by ID
 const getThreadById = async (id, session) => {
   try {
@@ -91,6 +142,33 @@ const getThreadById = async (id, session) => {
       } else {
         return thread;
       }
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// & Function to update a thread by ID
+const updateThreadById = async (id, body, session) => {
+  try {
+    const query = await getThreadById(id, session);
+    for (item in body) {
+      if (item === "bot_id" || item === "user_id") {
+        if (mongoose.Types.ObjectId.isValid(body[item])) {
+          query[item] = new mongoose.Types.ObjectId(body[item]);
+        }
+      } else {
+        query[item] = body[item];
+      }
+    }
+    const updateThread = await Thread.findByIdAndUpdate(id, query, {
+      new: true,
+      session,
+    }).lean();
+    if (!updateThread) {
+      throw createError(400, "Thread not updated");
+    } else {
+      return { thread: updateThread };
     }
   } catch (err) {
     throw err;
@@ -195,6 +273,8 @@ module.exports = {
   addFileToThread,
   deleteFileFromThread,
   stopRun,
+  getThreadsUsingQueryString,
+  updateThreadById,
 };
 
 // vs_EKBu7DPE3az7pdOn2wlvIdBv

@@ -1,8 +1,7 @@
 const express = require('express');
 const apiEnum = require('../utils/api_constant');
 const threadController = require('../controllers/thread_controller');
-const { authenticateToken } = require("../middlewares/token_authenticator");
-const { packageFeature } = require("../middlewares/package_feature");
+const { process_query } = require("../middlewares/process_query");
 const { setPathForUploader } = require("../middlewares/file_uploader");
 
 const router = express.Router();
@@ -23,13 +22,24 @@ router.post(apiEnum.STOP_THREAD, threadController.stopRunById);
 // ? API to upload a file to a thread
 router.post(
   apiEnum.UPLOAD,
-  // authenticateToken,
   upload.single("file"),
-  // packageFeature,
   threadController.uploadFileToThread
 );
 
 // ? API to delete a file from a thread
 router.post(apiEnum.DELETE_FILE, threadController.deleteFileFromThreadByID);
+
+// ? API to get all thread using querystring
+router.get(
+  apiEnum.GET_ALL,
+  process_query,
+  threadController.getAllThread
+);
+
+// ? API to update thread by ID
+router.put(
+  apiEnum.UPDATE_BY_ID,
+  threadController.updateThreadByID
+);
 
 module.exports = router;

@@ -10,6 +10,8 @@ const {
   addFileToThread,
   deleteFileFromThread,
   stopRun,
+  getThreadsUsingQueryString,
+  updateThreadById,
 } = require("../services/thread_services");
 const { createError } = require("../common/error");
 
@@ -217,6 +219,56 @@ const deleteFileFromThreadByID = async (req, res, next) => {
   }
 };
 
+// * Function to get all the threads using querystring
+const getAllThread = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const result = await getThreadsUsingQueryString(req, session);
+    if (result) {
+      await session.commitTransaction();
+      session.endSession();
+      res.status(200).json(result);
+    } else {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(404, "Thread not found"));
+    }
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
+// * Function to update a thread by ID
+const updateThreadByID = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const id = req?.params?.id;
+    if (!id) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "Id not provided"));
+    }
+    if (req?.body) {
+      const thread = await updateThreadById(id, req.body, session);
+      await session.commitTransaction();
+      session.endSession();
+      res.status(200).json(thread);
+    } else {
+      await session.abortTransaction();
+      session.endSession();
+      return next(createError(400, "No body provided"));
+    }
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    next(err);
+  }
+};
+
 module.exports = {
   getThreadByID,
   getMessageListByID,
@@ -224,4 +276,6 @@ module.exports = {
   uploadFileToThread,
   deleteFileFromThreadByID,
   stopRunById,
+  getAllThread,
+  updateThreadByID,
 }
