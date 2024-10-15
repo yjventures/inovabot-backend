@@ -11,6 +11,7 @@ const {
   addFileInVectorStore,
   deleteFileInVectorStore,
   stopRunThread,
+  runChatCompletion,
 } = require("../utils/open_ai_utils");
 const { findBotById } = require("../services/bot_services");
 const { addFile, getFile, deleteFile } = require("../services/file_services");
@@ -211,6 +212,13 @@ const runThreadById = async (id, message, eventEmitter, session) => {
   }
 };
 
+// & Function to run chat completion
+const runChat = async (message) => {
+  const retObject = await runChatCompletion(message);
+  console.log(retObject);
+  return retObject.choices[0].message.content;
+};
+
 // & Function to stop a run by open ai id
 const stopRun = async (thread_id, run_id) => {
   try {
@@ -275,6 +283,7 @@ module.exports = {
   stopRun,
   getThreadsUsingQueryString,
   updateThreadById,
+  runChat,
 };
 
 // vs_EKBu7DPE3az7pdOn2wlvIdBv
