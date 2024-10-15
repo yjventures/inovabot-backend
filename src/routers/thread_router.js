@@ -42,4 +42,10 @@ router.put(
   threadController.updateThreadByID
 );
 
+// ? API to run a chat completion
+router.post(
+  apiEnum.RUN_CHAT_COMPLETION,
+  threadController.runChatCompletion
+);
+
 module.exports = router;

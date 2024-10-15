@@ -12,6 +12,7 @@ const {
   stopRun,
   getThreadsUsingQueryString,
   updateThreadById,
+  runChat,
 } = require("../services/thread_services");
 const { createError } = require("../common/error");
 
@@ -269,6 +270,24 @@ const updateThreadByID = async (req, res, next) => {
   }
 };
 
+// * Function to run chat completion
+const runChatCompletion = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  try {
+    const text = req?.body?.text;
+    if (!text) {
+      return next(createError(400, "Text prompt not provided"));
+    }
+    const message = await runChat(text);
+    if (!message) {
+      return next(createError(400, "No response created"));
+    }
+    res.status(200).json({ message });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getThreadByID,
   getMessageListByID,
@@ -278,4 +297,5 @@ module.exports = {
   stopRunById,
   getAllThread,
   updateThreadByID,
+  runChatCompletion,
 }

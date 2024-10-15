@@ -158,7 +158,21 @@ const getMessagesOfThread = async (thread_id) => {
   }
 };
 
-// ^ Function to run a thread
+// ^ Function to run a thread chat completion
+const runChatCompletion = async (message) => {
+  try {
+    const model = process.env.INTERNAL_MODEL || 'gpt-3.5-turbo';
+    const completion = await openai.chat.completions.create({
+      messages: [{ role: "system", content: message }],
+      model,
+    });
+    return completion;
+  } catch (err) {
+      throw err;
+  }
+};
+
+// ^ Function to run a thread stream
 const runThread = async (assistant_id, thread_id, mainPrompt, eventEmitter) => {
   try {
     const message = await openai.beta.threads.messages.create(
@@ -321,6 +335,7 @@ module.exports = {
   translateAudio,
   createAudioFromText,
   stopRunThread,
+  runChatCompletion,
 };
 
 // * Here is a template for the tools

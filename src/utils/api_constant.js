@@ -37,7 +37,8 @@ const apiEnum = {
   UPGRADE_DOWNGRADE_SUBSCRIPTION: '/update',
   CANCEL_SUBSCRIPTION: '/cancel',
   TOTAL_INCOME: '/total-income',
-  DASHBOARD_SEARCH: '/dashboard-search'
+  DASHBOARD_SEARCH: '/dashboard-search',
+  RUN_CHAT_COMPLETION: '/run-chat-completion',
 };
 
 module.exports = apiEnum;
