@@ -40,6 +40,7 @@ const getThreadByID = async (req, res, next) => {
       if (req?.body?.unique_id) {
         query.unique_id = req.body?.unique_id;
       }
+      query.name = req?.body?.name || "";
       const thread = await createAThread(query, session);
       await session.commitTransaction();
       session.endSession();
