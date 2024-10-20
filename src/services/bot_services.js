@@ -65,10 +65,15 @@ const createBotInstructions = (req) => {
     }
     if (req?.body?.links && req?.body?.links?.length > 0) {
       for (let item of req.body.links) {
-        instruction += `\n\nDisplay ${item.link} in a responsive iframe when ${item.objective}\n`;
+        instruction += `\n\nDisplay ${item.link} in a responsive iframe when ${item.objective}.\n`;
       }
     }
-    instruction += `\n\nYou will respond in clean, proper HTML so the application can render it straight away. Normal text will be wrapped in a <p> tag. You will format the links as html links with an <a> tag. Links will have yellow font. Use divs and headings to properly separate different sections. Make sure text doesn't overlap and there is adequate line spacing. You will only output pure HTML. No markdown. All answers, titles, lists, headers, paragraphs - reply in fully styled HTML as the app will render and parse your responses as you reply.`;
+    if (req?.body?.images && req?.body?.images.length > 0) {
+      for (let item of req.body.images) {
+        instruction += `\n\nDisplay ${item.image_url} with a shorter description if multiple image was shown. If a single image was shown, show large description. The description is: ${item.description}.\n\n`;
+      }
+    }
+    instruction += `\n\nYou will respond in clean, proper HTML so the application can render it straight away. Normal text will be wrapped in a <p> tag. You will format the links as html links with an <a> tag. Links will have yellow font. Use divs and headings to properly separate different sections. Make sure text doesn't overlap and there is adequate line spacing. You will only output pure HTML. No markdown. All answers, titles, lists, headers, paragraphs - reply in fully styled HTML as the app will render and parse your responses as you reply. Only if you are asked about some programming problem that requirs to send a code, you will use dark background and white font for that code. Don't use \`\`\`html at the start and do not end with \`\`\`. Do not output any text afterwards.`;
     return instruction;
   } catch (err) {
     throw err;

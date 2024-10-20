@@ -32,6 +32,10 @@ const threadSchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    metadata: {
+      type: Object,
+      default: {},
+    }
   },
   {
     timestamps: true,  
