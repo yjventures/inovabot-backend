@@ -97,6 +97,9 @@ app.use('/faqs', require('../routers/faq_router'));
 // ~ Router for links
 app.use('/links', require('../routers/link_router'));
 
+// ~ Router for images
+app.use('/images', require('../routers/image_router'));
+
 // ~ Router for templates
 app.use('/templates', require('../routers/template_router'));
 

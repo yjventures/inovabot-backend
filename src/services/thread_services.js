@@ -47,7 +47,7 @@ const createAThread = async (body, session) => {
     for (let item in body) {
       if (item === "user_id" || item === "bot_id") {
         threadObj[item] = new mongoose.Types.ObjectId(body[item]);
-      } else {
+      } else if (item !== "metadata") {
         threadObj[item] = body[item];
       }
     }
@@ -66,6 +66,9 @@ const createAThread = async (body, session) => {
       threadObj.thread_id = openAiThread.id;
     } else {
       throw createError(400, "Thread not created in openAI");
+    }
+    if (body?.metadata) {
+      threadObj.metadata = body.metaData;
     }
     const threadCollection = await new Thread(threadObj);
     const thread = await threadCollection.save({ session });
@@ -99,7 +102,7 @@ const getThreadsUsingQueryString = async (req, session) => {
       } else if (item === "search") {
         const regex = new RegExp(req.query.search, "i");
         query.name = { $regex: regex };
-      } else if (item === "company_id") {
+      } else if (item === "company_id" || item === "bot_id") {
         if (mongoose.Types.ObjectId.isValid(req?.query[item])) {
           query[item] = new mongoose.Types.ObjectId(req?.query[item]);
         }
