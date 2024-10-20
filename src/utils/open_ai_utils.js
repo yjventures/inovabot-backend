@@ -161,7 +161,7 @@ const getMessagesOfThread = async (thread_id) => {
 // ^ Function to run a thread chat completion
 const runChatCompletion = async (message, role='system') => {
   try {
-    const model = process.env.INTERNAL_MODEL || 'gpt-4o';
+    const model = process.env.INTERNAL_MODEL || 'gpt-4o-mini';
     const completion = await openai.chat.completions.create({
       messages: [{ role, content: message }],
       model,
