@@ -1,39 +1,78 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const fs = require("fs");
+const path = require("path");
 const Image = require("../models/image");
 const { updateBotById } = require("./bot_services");
-const { runChatCompletion } = require("../utils/open_ai_utils");
+const {
+  runChatCompletion,
+  addFileInVectorStore,
+  deleteFileInVectorStore,
+} = require("../utils/open_ai_utils");
 const { createError } = require("../common/error");
+const { findBotById } = require("./bot_services");
+require("dotenv").config();
 
 // & Function to create a new image
 const createImage = async (imageObj, session) => {
+  let file = "";
   try {
-    const content = [
-      {
-        type: "text",
-        text: "Describe the image given"
-      },
-      {
-        type: "image_url",
-        image_url: {
-          url: imageObj.image_url
-        }
+    const randomNumber = Math.floor(Math.random() * 10000000);
+    const fileLocation = process.env.BULK_FILE_LOCATION;
+    const filePath = path.join(fileLocation, `/image_urls_${randomNumber}.txt`);
+    if (!fs.existsSync(fileLocation)) {
+      fs.mkdirSync(fileLocation, { recursive: true });
+    }
+    fs.writeFileSync(
+      filePath,
+      `Show this images for this objective: ${imageObj.objective}\n`,
+      (err) => {
+        if (err) throw err;
       }
-    ];
-    const messageObj = await runChatCompletion(content, 'user');
-    const description = messageObj.choices[0].message.content;
-    const imageCollection = await new Image({...imageObj, description});
+    );
+    file = filePath;
+    for (let url of imageObj.image_url) {
+      let content = [
+        {
+          type: "text",
+          text: "Describe the image given",
+        },
+        {
+          type: "image_url",
+          image_url: {
+            url: url,
+          },
+        },
+      ];
+      let messageObj = await runChatCompletion(content, "user");
+      let description = messageObj.choices[0].message.content;
+
+      fs.appendFileSync(
+        filePath,
+        `Image: ${url}\nDescription: ${description}\n\n`,
+        (err) => {
+          if (err) throw err;
+        }
+      );
+    }
+
+    const bot = await findBotById(imageObj.bot_id.toString(), session);
+
+    const fileObj = await addFileInVectorStore(bot.vector_store_id, filePath);
+
+    const imageCollection = await new Image({ ...imageObj, file_id: fileObj.id });
     const image = await imageCollection.save({ session });
     if (!image) {
       throw createError(400, "Image couldn't be added");
     }
+    fs.unlinkSync(file);
     const imageList = await getAllImages(imageObj.bot_id, session);
     if (imageList && imageList.length > 0) {
-      const bot = await updateBotById(image.bot_id, { images: imageList }, session);
       return imageList;
     } else {
       throw createError(400, "Image couldn't found");
     }
   } catch (err) {
+    fs.unlinkSync(file);
     throw err;
   }
 };
@@ -42,7 +81,8 @@ const createImage = async (imageObj, session) => {
 const getImageUsingQureystring = async (req, session) => {
   try {
     const query = {};
-    let page = 1, limit = 10;
+    let page = 1,
+      limit = 10;
     let sortBy = "createdAt";
     for (let item in req?.query) {
       if (item === "page") {
@@ -62,8 +102,7 @@ const getImageUsingQureystring = async (req, session) => {
         sortBy = req?.query?.sortBy;
       } else if (item === "bot_id") {
         query[item] = new mongoose.Types.ObjectId(req?.query[item]);
-      } 
-      else {
+      } else {
         query[item] = req?.query[item];
       }
     }
@@ -72,7 +111,7 @@ const getImageUsingQureystring = async (req, session) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .session(session);
-    const count = await Image.countDocuments(query, {session});
+    const count = await Image.countDocuments(query, { session });
     return {
       data: images,
       metadata: {
@@ -83,7 +122,7 @@ const getImageUsingQureystring = async (req, session) => {
       message: "Success",
     };
   } catch (err) {
-    throw createError(404, "Image not found"); 
+    throw createError(404, "Image not found");
   }
 };
 
@@ -115,7 +154,10 @@ const updateImageById = async (id, body, session) => {
         query[item] = body[item];
       }
     }
-    const updateImage = await Image.findByIdAndUpdate(id, query, { new: true, session }).lean();
+    const updateImage = await Image.findByIdAndUpdate(id, query, {
+      new: true,
+      session,
+    }).lean();
     if (!updateImage) {
       throw createError(400, "Image not updated");
     } else {
@@ -128,16 +170,15 @@ const updateImageById = async (id, body, session) => {
   }
 };
 
-
 // & Function to delete an image by ID
 const deleteImageById = async (id, session) => {
   try {
-    const deleteImage = await Image.findByIdAndDelete(id).session(session);
+    const deleteImage = await Image.findByIdAndDelete(id).session(session).lean();
     if (!deleteImage) {
       throw createError(404, "Image not found");
     } else {
-      const images = await getAllImages(deleteImage.bot_id, session);
-      const bot = await updateBotById(deleteImage.bot_id, { images }, session);
+      const bot = await findBotById(deleteImage.bot_id.toString(), session);
+      await deleteFileInVectorStore(bot.vector_store_id, deleteImage.file_id);
       return { message: "Image is deleted" };
     }
   } catch (err) {

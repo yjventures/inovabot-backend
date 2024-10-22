@@ -8,10 +8,14 @@ const imageSchema = mongoose.Schema(
       ref: 'Bot',
     },
     image_url: {
-      type: String,
-      default: '',
+      type: [
+        {
+          type: String,
+        }
+      ],
+      default: [],
     },
-    description: {
+    file_id: {
       type: String,
       default: '',
     },
